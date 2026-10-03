@@ -1,0 +1,406 @@
+{% extends "base.html" %}
+
+{% block title %}Noise — Smart Tech Powered by Multi-Criteria Ranked Search{% endblock %}
+
+{% block content %}
+<div class="homepage-container">
+
+    <!-- 1. Hero Showcase -->
+    <section class="hero-section">
+        <div class="hero-grid">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <span class="badge-glow-dot"></span>
+                    <span class="badge-text">DUAL-ENGINE MICROSERVICE PLATFORM</span>
+                </div>
+                <h1 class="hero-title">
+                    Listen to the <span class="text-gradient">Noise Within</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Smart Tech Powered by Multi-Criteria Ranked Search. Unlike conventional stores with black-box algorithms, our storefront evaluates audio and wearables with transparent, user-weighted mathematics and sub-millisecond precision.
+                </p>
+                <div class="hero-cta-group">
+                    <a href="#featured-products" class="btn btn-primary">
+                        <span>Explore Flagship Devices</span>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                    </a>
+                    <a href="#ranking-engine-card" class="btn btn-secondary">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                        <span>How Ranking Works</span>
+                    </a>
+                </div>
+
+                <!-- Live Microservice Telemetry Summary -->
+                <div class="hero-stats-strip">
+                    <div class="stat-item">
+                        <span class="stat-number">PORT 5000</span>
+                        <span class="stat-label">Ranking Microservice</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <span class="stat-number">100.0%</span>
+                        <span class="stat-label">Strict Weight Sum</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <span class="stat-number">1:5 RATIO</span>
+                        <span class="stat-label">Anti-Bias Sponsored Cap</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hero Visual / Cyber Audio Mockup -->
+            <div class="hero-visual">
+                <div class="cyber-card-showcase">
+                    <div class="card-glow"></div>
+                    <div class="showcase-inner">
+                        <div class="showcase-header">
+                            <span class="showcase-tag">LIVE TELEMETRY</span>
+                            <span class="showcase-score">Rank #1 &bull; 94.6 pts</span>
+                        </div>
+                        <div class="showcase-device-art">
+                            <div class="soundwave-rings">
+                                <div class="ring ring-1"></div>
+                                <div class="ring ring-2"></div>
+                                <div class="ring ring-3"></div>
+                            </div>
+                            <div class="device-graphic">
+                                <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="#00F2FE" stroke-width="1.5">
+                                    <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+                                    <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="showcase-details">
+                            <h3 class="device-name">Noise Master Studio Pro</h3>
+                            <p class="device-category">Active Noise Cancelling Wireless Headphones</p>
+                            <div class="device-specs-bar">
+                                <span class="spec-pill">60h Battery</span>
+                                <span class="spec-pill">ANC 45dB</span>
+                                <span class="spec-pill">4.9 ★ Rating</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. Category Navigation Pills -->
+    <section class="categories-section">
+        <div class="section-header">
+            <h2 class="section-title">Explore by Domain Category</h2>
+            <p class="section-subtitle">Multi-criteria attribute dimensions optimized specifically for each product class</p>
+        </div>
+        <div class="category-pills-container">
+            <a href="/categories?c=smartwatches" class="category-pill active">
+                <span class="cat-icon">⌚</span>
+                <span class="cat-name">Smartwatches</span>
+                <span class="cat-count">Display, Battery, Sensors</span>
+            </a>
+            <a href="/categories?c=wireless-earbuds" class="category-pill">
+                <span class="cat-icon">🎧</span>
+                <span class="cat-name">Wireless Earbuds</span>
+                <span class="cat-count">True Wireless, Low Latency</span>
+            </a>
+            <a href="/categories?c=headphones" class="category-pill">
+                <span class="cat-icon">🎙️</span>
+                <span class="cat-name">Headphones</span>
+                <span class="cat-count">Over-Ear ANC, Studio Driver</span>
+            </a>
+            <a href="/categories?c=audio-gear" class="category-pill">
+                <span class="cat-icon">🔊</span>
+                <span class="cat-name">Audio Gear</span>
+                <span class="cat-count">Speakers, DAPs, Amplifiers</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- 3. Featured Products Showcase Placeholder -->
+    <section class="featured-section" id="featured-products">
+        <div class="section-header-flex">
+            <div>
+                <h2 class="section-title">Featured Smart Products</h2>
+                <p class="section-subtitle">Top algorithmic picks computed across normalized battery life, ANC, rating, and value</p>
+            </div>
+            <div class="sorting-indicator">
+                <span class="sort-label">Ranked via:</span>
+                <span class="sort-badge">Min-Max Normalized Composite</span>
+            </div>
+        </div>
+
+        <!-- Product Cards Grid -->
+        <div class="product-grid">
+            <!-- Product Card 1 -->
+            <div class="product-card featured-highlight">
+                <div class="card-badge-row">
+                    <span class="badge-featured">★ RANK #1</span>
+                    <span class="badge-spec">ANC 45dB</span>
+                </div>
+                <div class="product-image-container">
+                    <div class="product-image-placeholder">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#00F2FE" stroke-width="1.5">
+                            <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+                            <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="product-info">
+                    <div class="product-category-tag">Headphones</div>
+                    <h3 class="product-title">Noise Master Studio Pro ANC</h3>
+                    <p class="product-desc">Flagship over-ear headphones with 45dB hybrid ANC, 60-hour playtime, and LDAC high-res audio codec support.</p>
+                    
+                    <div class="product-metrics-grid">
+                        <div class="metric-pill">
+                            <span class="metric-key">Battery</span>
+                            <span class="metric-val">60 hrs</span>
+                        </div>
+                        <div class="metric-pill">
+                            <span class="metric-key">ANC</span>
+                            <span class="metric-val">Hybrid</span>
+                        </div>
+                        <div class="metric-pill">
+                            <span class="metric-key">Rating</span>
+                            <span class="metric-val">4.9 ★ (1,420)</span>
+                        </div>
+                    </div>
+
+                    <div class="product-pricing-row">
+                        <div class="pricing-group">
+                            <span class="price-current">₹7,999</span>
+                            <span class="price-original">₹14,999</span>
+                            <span class="discount-pill">47% OFF</span>
+                        </div>
+                        <button class="btn btn-cart-quick" title="Add to Shopping Cart">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Card 2 (Sponsored Interleaved Example) -->
+            <div class="product-card sponsored-card">
+                <div class="card-badge-row">
+                    <span class="badge-sponsored">SPONSORED PLACEMENT</span>
+                    <span class="badge-spec">IP68 WATERPROOF</span>
+                </div>
+                <div class="product-image-container">
+                    <div class="product-image-placeholder">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#4facfe" stroke-width="1.5">
+                            <rect x="5" y="2" width="14" height="20" rx="3"></rect>
+                            <line x1="12" y1="18" x2="12" y2="18.01"></line>
+                        </svg>
+                    </div>
+                </div>
+                <div class="product-info">
+                    <div class="product-category-tag">Smartwatches</div>
+                    <h3 class="product-title">Noise ColorFit Ultra 3 Pro</h3>
+                    <p class="product-desc">1.96-inch AMOLED display, stainless steel casing, Bluetooth calling v5.3, and 7-day battery endurance.</p>
+                    
+                    <div class="product-metrics-grid">
+                        <div class="metric-pill">
+                            <span class="metric-key">Display</span>
+                            <span class="metric-val">1.96" AMOLED</span>
+                        </div>
+                        <div class="metric-pill">
+                            <span class="metric-key">Battery</span>
+                            <span class="metric-val">168 hrs</span>
+                        </div>
+                        <div class="metric-pill">
+                            <span class="metric-key">Rating</span>
+                            <span class="metric-val">4.7 ★ (3,890)</span>
+                        </div>
+                    </div>
+
+                    <div class="product-pricing-row">
+                        <div class="pricing-group">
+                            <span class="price-current">₹3,499</span>
+                            <span class="price-original">₹7,999</span>
+                            <span class="discount-pill">56% OFF</span>
+                        </div>
+                        <button class="btn btn-cart-quick" title="Add to Shopping Cart">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Card 3 -->
+            <div class="product-card">
+                <div class="card-badge-row">
+                    <span class="badge-featured">POPULAR</span>
+                    <span class="badge-spec">INSTACHECK</span>
+                </div>
+                <div class="product-image-container">
+                    <div class="product-image-placeholder">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#00F2FE" stroke-width="1.5">
+                            <path d="M12 2a4 4 0 0 0-4 4v7a4 4 0 0 0 8 0V6a4 4 0 0 0-4-4z"></path>
+                            <path d="M19 10v3a7 7 0 0 1-14 0v-3"></path>
+                            <line x1="12" y1="20" x2="12" y2="23"></line>
+                        </svg>
+                    </div>
+                </div>
+                <div class="product-info">
+                    <div class="product-category-tag">Wireless Earbuds</div>
+                    <h3 class="product-title">Noise Buds VS104 Pro ANC</h3>
+                    <p class="product-desc">Ultra-low latency 40ms gaming mode, Quad Mic with Environmental Noise Cancellation, and 45-hour total backup.</p>
+                    
+                    <div class="product-metrics-grid">
+                        <div class="metric-pill">
+                            <span class="metric-key">Latency</span>
+                            <span class="metric-val">40 ms</span>
+                        </div>
+                        <div class="metric-pill">
+                            <span class="metric-key">ANC</span>
+                            <span class="metric-val">25dB Active</span>
+                        </div>
+                        <div class="metric-pill">
+                            <span class="metric-key">Rating</span>
+                            <span class="metric-val">4.6 ★ (2,105)</span>
+                        </div>
+                    </div>
+
+                    <div class="product-pricing-row">
+                        <div class="pricing-group">
+                            <span class="price-current">₹1,799</span>
+                            <span class="price-original">₹3,999</span>
+                            <span class="discount-pill">55% OFF</span>
+                        </div>
+                        <button class="btn btn-cart-quick" title="Add to Shopping Cart">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Card 4 -->
+            <div class="product-card">
+                <div class="card-badge-row">
+                    <span class="badge-featured">NEW RELEASE</span>
+                    <span class="badge-spec">DUAL PAIRING</span>
+                </div>
+                <div class="product-image-container">
+                    <div class="product-image-placeholder">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#00F2FE" stroke-width="1.5">
+                            <circle cx="12" cy="12" r="9"></circle>
+                            <circle cx="12" cy="12" r="4"></circle>
+                        </svg>
+                    </div>
+                </div>
+                <div class="product-info">
+                    <div class="product-category-tag">Audio Gear</div>
+                    <h3 class="product-title">Noise PureSound 30W Soundbar</h3>
+                    <p class="product-desc">Deep bass dual passive radiators, optical & HDMI ARC inputs, custom EQ profiles for cinema, gaming, and vocals.</p>
+                    
+                    <div class="product-metrics-grid">
+                        <div class="metric-pill">
+                            <span class="metric-key">Output</span>
+                            <span class="metric-val">30 Watts</span>
+                        </div>
+                        <div class="metric-pill">
+                            <span class="metric-key">Bluetooth</span>
+                            <span class="metric-val">v5.3</span>
+                        </div>
+                        <div class="metric-pill">
+                            <span class="metric-key">Rating</span>
+                            <span class="metric-val">4.5 ★ (640)</span>
+                        </div>
+                    </div>
+
+                    <div class="product-pricing-row">
+                        <div class="pricing-group">
+                            <span class="price-current">₹2,499</span>
+                            <span class="price-original">₹4,999</span>
+                            <span class="discount-pill">50% OFF</span>
+                        </div>
+                        <button class="btn btn-cart-quick" title="Add to Shopping Cart">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. Ranking Engine Integration Explanation Card -->
+    <section class="integration-section" id="ranking-engine-card">
+        <div class="engine-explanation-card">
+            <div class="card-glow"></div>
+            <div class="card-header-bar">
+                <div class="engine-tag-badge">
+                    <span class="pulse-green"></span>
+                    <span>B2B INTEGRATION ARCHITECTURE</span>
+                </div>
+                <span class="engine-id-chip">PORT 8000 &harr; PORT 5000</span>
+            </div>
+
+            <div class="explanation-grid">
+                <div class="explanation-col">
+                    <h3 class="engine-heading">How Our Weighted Ranking Engine Powers Every Search</h3>
+                    <p class="engine-text">
+                        Most modern e-commerce storefronts use opaque black-box algorithms or sponsored-only placement that obscure true product merit. Our architecture is built upon a dual-tier microservice model separating the lifestyle consumer storefront from the mathematical ranking engine:
+                    </p>
+                    <ul class="engine-bullet-list">
+                        <li>
+                            <strong>Deterministic Min-Max Normalization:</strong> Raw metrics across disparate dimensions (battery hours, decibels, latency milliseconds, star ratings) are mapped to a normalized <code>[0.0, 1.0]</code> scale.
+                        </li>
+                        <li>
+                            <strong>Personalized Attribute Weights:</strong> Category weights enforce a mathematical 100% allocation rule. Shoppers can tune weight sliders to re-rank the catalog dynamically.
+                        </li>
+                        <li>
+                            <strong>Strict 1:5 Anti-Bias Sponsored Interleaving:</strong> Sponsored campaigns are strictly restricted to 1 slot per 5 organic items (slots 1, 6, 11) with a 20% cap, preserving organic ranking integrity.
+                        </li>
+                        <li>
+                            <strong>Resilient Offline Fallback:</strong> If the microservice on port 5000 is unavailable or times out, the storefront instantly switches to local SQLite ranking without user disruption.
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="explanation-col engine-telemetry-box">
+                    <div class="telemetry-header">
+                        <span class="telemetry-title">Engine Scoring Formula</span>
+                        <span class="telemetry-version">v1.0 API</span>
+                    </div>
+                    <div class="formula-block">
+                        <code>Composite Score = &sum; ( w<sub>i</sub> &times; norm(v<sub>i</sub>) )</code>
+                    </div>
+                    <div class="telemetry-table">
+                        <div class="table-row table-head">
+                            <span>Attribute</span>
+                            <span>Direction</span>
+                            <span>Tenant Default Weight</span>
+                        </div>
+                        <div class="table-row">
+                            <span class="attr-name">Battery Life (hrs)</span>
+                            <span class="badge-higher">Higher is Better</span>
+                            <span class="weight-tag">30.0%</span>
+                        </div>
+                        <div class="table-row">
+                            <span class="attr-name">ANC Noise Cut (dB)</span>
+                            <span class="badge-higher">Higher is Better</span>
+                            <span class="weight-tag">25.0%</span>
+                        </div>
+                        <div class="table-row">
+                            <span class="attr-name">Price Value (₹)</span>
+                            <span class="badge-lower">Lower is Better</span>
+                            <span class="weight-tag">25.0%</span>
+                        </div>
+                        <div class="table-row">
+                            <span class="attr-name">User Rating (1-5)</span>
+                            <span class="badge-higher">Higher is Better</span>
+                            <span class="weight-tag">20.0%</span>
+                        </div>
+                    </div>
+                    <div class="telemetry-footer">
+                        <span>Total Category Weight: <strong>100.0% (Valid)</strong></span>
+                        <a href="{{ engine_url|default('http://localhost:5000') }}/api/v1/search" target="_blank" class="engine-link">
+                            Inspect JSON API &rarr;
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div>
+{% endblock %}
