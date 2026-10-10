@@ -1,119 +1,81 @@
-# Knowledge Base — Noise E-Commerce Platform
+# Knowledgebase — Noise E-Commerce Platform
 
-This document serves as the architectural reference and engineering manual for the **Noise E-Commerce Platform** (Storefront Microservice Consumer).
-
----
-
-## 1. System Architecture & Topology
-
-The overall system is designed as a distributed two-tier microservice architecture:
-1. **Weighted Ranking Engine (B2B Backend Microservice)**:
-   - Port: `5000`
-   - Purpose: Multi-tenant catalog ranking, attribute dimension management, mathematical weight enforcement, deterministic Min-Max scoring, and anti-bias sponsored slot interleaving.
-2. **Noise Smart Tech Storefront (Customer-Facing Consumer Application)**:
-   - Port: `8000`
-   - Purpose: Consumer electronics e-commerce shopping experience, personalized search sliders, interactive tuning UI, session-persisted cart, and checkout processing.
-
-```
-+-----------------------------------------------------------------------+
-|                 NOISE SMART TECH STOREFRONT (PORT 8000)                |
-|                                                                       |
-|   +-------------------+    +--------------------+    +------------+   |
-|   |   Engine 3: UI    |    |  Engine 1: Models  |    | Engine 4:  |   |
-|   |  Templates & CSS  |    |  Product, CartItem |    | Validation |   |
-|   | (Space Grotesk,   |    |   Order, OrderItem |    |  (GST 18%, |   |
-|   |  Cyan #00F2FE)    |    |     (SQLite)       |    |  Shipping) |   |
-|   +---------+---------+    +---------+----------+    +-----+------+   |
-|             |                        |                     |          |
-|             +------------+-----------+---------------------+          |
-|                          |                                            |
-|                +---------v----------+                                 |
-|                |  Engine 2: Client  |                                 |
-|                |  & Fallback Engine |                                 |
-|                +---------+----------+                                 |
-+--------------------------|--------------------------------------------+
-                           | HTTP REST (JSON)
-                           | GET /api/v1/search?category=...&weights=...
-                           v
-+-----------------------------------------------------------------------+
-|             WEIGHTED RANKING ENGINE MICROSERVICE (PORT 5000)          |
-|                                                                       |
-|   * Tenant Isolation (Company #1: Noise)                              |
-|   * Min-Max Continuous & Discrete Binary Normalization                |
-|   * Strict 100% Weight Allocation Enforcement                         |
-|   * 1:5 Anti-Bias Sponsored Placement Interleaving (Slots 1, 6, 11)   |
-|   * 3-Tier Tie-Breaking (Composite Score DESC -> Date DESC -> ID ASC) |
-+-----------------------------------------------------------------------+
-```
+> Comprehensive chronological log, architecture reference, and technical decisions register for the Noise E-Commerce storefront project.  
+> Engineers and agents reference this document to track component responsibilities, implementation evolution, and architectural rationale.
 
 ---
 
-## 2. The 4 Engineering Subsystems (Engines)
+## 1. Project Component Registry & Architectural Log
 
-The storefront platform is structured into four cohesive engineering engines:
-
-### Engine 1: Data & Integrity (Catalog & Persistence)
-- **Role**: Manages relational entities, schemas, referential integrity, cascading actions, and data serializations.
-- **Components**:
-  - `Product`: Catalog items with pricing, category slug, review metrics, battery life (hours), ANC flags, specs JSON, and stock flags. Includes calculated properties such as `discount_pct` and `specs` parsing.
-  - `CartItem`: Session-bound shopping cart entries (`session_id`), linked to `Product` via foreign key with dynamic backref. Includes real-time `subtotal` computation.
-  - `Order`: Customer transaction header (`order_number`, customer metadata, delivery address, `total_amount`, and lifecycle status).
-  - `OrderItem`: Line items associated with a parent `Order` with `cascade="all, delete-orphan"`, recording historical unit price and quantity snapshot.
-- **Integrity Constraints**:
-  - Unique index on `Product.slug` and `Order.order_number`.
-  - Non-nullable session identification for carts to ensure guest isolation.
-  - Automatic UTC timestamp tracking (`created_at`).
-
-### Engine 2: Core Logic / Algorithm (Recommendation Client & Fallback)
-- **Role**: Handles communication with the upstream ranking engine and ensures deterministic fallback computation.
-- **Components**:
-  - `RankingEngineClient`: HTTP client communicating with `http://localhost:5000/api/v1/search`.
-  - **Dynamic Personalization**: Passes user weight preferences (`battery_life`, `price`, `rating`, `anc`) as query parameters or JSON payload.
-  - **Offline Fallback Architecture**: If the microservice on port 5000 is unreachable, times out (>1.5s), or returns an HTTP 5xx error, the client activates local normalization ranking using the local SQLite database.
-  - **Score Attribution Reconciliation**: Maps upstream attribution breakdowns (Min-Max scores and metric weights) to the storefront UI for maximum transparency.
-
-### Engine 3: Interface & Access (Web Tech: Templates, CSS, UI)
-- **Role**: User-facing presentation layer, responsive design system, and dynamic interaction.
-- **Components**:
-  - `app/templates/base.html`: Master layout featuring the tech-lifestyle dark theme, electric cyan accents (`#00F2FE`), responsive navbar, live engine status indicator pill (`RANKING ENGINE :5000`), cart counter badge, flash message alerts, and academic project footer.
-  - `app/templates/index.html`: Storefront homepage featuring the hero section, domain category pills, featured product showcase cards, and architectural integration telemetry display.
-  - `app/static/css/style.css`: Unified design system with custom properties, Space Grotesk display typography, Plus Jakarta Sans body, JetBrains Mono code/metrics, glassmorphism cards, and mobile-friendly responsive breakpoints.
-  - **Shopping Cart & Tuner UI**: Real-time attribute slider controls for re-ranking products client-side or through AJAX search endpoints.
-
-### Engine 4: Validation, Security & Reporting (Business Logic & Audit)
-- **Role**: Order calculation validation, regulatory compliance, transaction sanitization, and automated test coverage.
-- **Components**:
-  - **Order Pricing Calculations**:
-    - Free shipping threshold: Orders $\ge$ ₹999 qualify for free shipping; otherwise a flat ₹99 fee applies.
-    - Statutory GST calculation: Fixed 18.0% Goods & Services Tax validation on product subtotals.
-  - **Input Sanitization**: Session identifier validation, parameter sanitization for category and weight values.
-  - **Testing & Verification**: Pytest suite covering model invariants, cart operations, template rendering, and client failover behaviors.
+| Timestamp | Phase | File | Lines | Developer | Architectural Responsibility |
+|---|---|---|---|---|---|
+| 2026-09-27 | P1 | `run.py` | 1-20 | Dev-A | Application entry point; runs local development server on port `8000`. |
+| 2026-09-27 | P1 | `config.py` | 1-43 | Dev-A | Centralized configuration managing port 8000, SQLite database URIs, and ranking engine URL (`http://localhost:5000`) and tenant ID (`1`). |
+| 2026-09-27 | P1 | `requirements.txt` | 1-6 | Dev-A | System package requirements: `Flask`, `Flask-SQLAlchemy`, `requests`, `pytest`, `python-slugify`. |
+| 2026-09-27 | P1 | `app/__init__.py` | 1-50 | Dev-A | Flask application factory `create_app()`; initializes SQLAlchemy, registers `storefront` and `admin` blueprints, injects global context processors (engine status, cart count). |
+| 2026-09-27 | P1 | `app/models.py` | 1-152 | Dev-A | SQLAlchemy data models: `Product` (specs, pricing, battery, ANC, discount), `CartItem` (session cart), `Order`, and `OrderItem`. |
+| 2026-09-27 | P1 | `README.md` | 1-120 | Dev-A | Project overview, tech stack, architecture diagram, dual-server setup commands, and endpoint reference. |
+| 2026-09-27 | P1 | `app/templates/base.html` | 1-215 | Dev-B | Master storefront layout with top live engine status bar, brand navigation, live search form, recommendation tuner modal, and footer. |
+| 2026-09-27 | P1 | `app/static/css/style.css` | 1-1037 | Dev-B | Comprehensive storefront design system: tech-lifestyle dark theme (`#0A0D14`), electric cyan accents (`#00F2FE`), neon glows, glassmorphism, responsive product grids. |
+| 2026-09-27 | P1 | `knowledgebase.md` | 1-80 | Dev-B | Chronological development and architecture log initialized. |
+| 2026-09-27 | P1 | `function_map.md` | 1-60 | Dev-B | Function, route, and method registry initialized. |
+| 2026-09-27 | P1 | `docs/setup_guide.md` | 1-90 | Dev-B | Step-by-step developer orchestration guide for running both services. |
+| 2026-09-27 | P2 | `app/engine_client.py` | 1-489 | Dev-A | B2B REST client connecting to Weighted Ranking Engine (`:5000`); handles `health_check()`, `get_categories()`, `search()`, `get_product_breakdown()`, and local fallback algorithms. |
+| 2026-09-27 | P2 | `app/templates/base.html` | — | Dev-B | Added real-time engine connectivity dot and dynamic offline alert banner in header. |
+| 2026-09-27 | P3 | `app/storefront/__init__.py`| 1-6 | Dev-B | Storefront blueprint definition. |
+| 2026-09-27 | P3 | `app/storefront/routes.py` | 1-381 | Dev-A | Public customer routes: homepage (`/`), catalog search (`/shop`), re-ranking API (`/api/smart-rank`), product page (`/product/<id>`), cart management (`/cart`), and checkout. |
+| 2026-09-27 | P3 | `app/templates/storefront/index.html` | 1-140 | Dev-A | Homepage featuring hero electronics showcase, category shortcut cards, and "Top Ranked by Engine" product grid. |
+| 2026-09-27 | P3 | `app/templates/storefront/shop.html` | 1-160 | Dev-A | Interactive catalog listing with search query bar, filter tags, rank medals (`#01`, `#02`, `#03`), sponsored badges, and score percentages. |
+| 2026-09-27 | P3 | `app/static/js/storefront.js` | 1-126 | Dev-B | Client-side recommendation tuner script: slider event listeners, 100% weight validation, preset loaders (Max Battery, Budget Value, Audiophile), and dynamic AJAX re-ranking. |
+| 2026-09-27 | P4 | `app/templates/storefront/product_detail.html` | 1-165 | Dev-A | Detailed product page with specifications, image gallery, customer ratings, and the "Ranking Score Breakdown" widget. |
+| 2026-09-27 | P4 | `app/templates/storefront/cart.html` | 1-115 | Dev-B | Shopping cart view with item quantity adjustment, price calculation, GST breakdown, and shipping threshold tracker. |
+| 2026-09-27 | P4 | `app/templates/storefront/order_success.html`| 1-75 | Dev-B | Checkout confirmation page with simulated order number, tracking timeline, and purchase summary. |
+| 2026-09-27 | P5 | `app/admin/__init__.py` | 1-6 | Dev-A | Admin blueprint definition. |
+| 2026-09-27 | P5 | `app/admin/routes.py` | 1-192 | Dev-A | Admin portal routes: store overview (`/admin/`), inventory CRUD (`/admin/products`), embedded engine console (`/admin/ranking-engine`), and engine status JSON API (`/admin/api/engine-status`). |
+| 2026-09-27 | P5 | `app/templates/admin/base.html` | 1-85 | Dev-B | Admin sidebar layout with navigation, live engine connection pill, and store telemetry. |
+| 2026-09-27 | P5 | `app/templates/admin/dashboard.html` | 1-120 | Dev-B | Admin dashboard featuring revenue stats, order count, inventory alerts, and engine latency health card. |
+| 2026-09-27 | P5 | `app/templates/admin/products.html` | 1-90 | Dev-B | Inventory management table with price, stock toggles, and edit/delete actions. |
+| 2026-09-27 | P5 | `app/templates/admin/ranking_engine.html` | 1-103 | Dev-B | Dedicated Ranking Engine Hub: embedded iframe browser console, quick navigation toolbar, and live REST API query simulator. |
+| 2026-09-27 | P5 | `app/static/css/admin.css` | 1-280 | Dev-B | Dark-mode admin console styling with dashboard grids, status tags, and embedded iframe container. |
+| 2026-09-27 | P5 | `app/static/js/admin_ranking.js` | 1-81 | Dev-B | Admin console JavaScript: iframe URL switcher, background engine latency polling, and interactive REST query simulator execution. |
+| 2026-09-27 | P6 | `seed.py` | 1-428 | Dev-A | Database seeder populating 16+ Noise devices (ColorFit Ultra 3, Halo, Icon 2, Buds VS104, Buds X Prime, etc.), categories, and mock orders. |
+| 2026-09-27 | P6 | `docs/api_reference.md` | 1-220 | Dev-B | Complete B2B Engine API reference specification for client developers. |
+| 2026-09-27 | P6 | `docs/integration_guide.md` | 1-650 | Dev-B | Flagship enterprise integration guide covering architecture, onboarding, catalog sync, frontend tuner, score transparency, and admin embedding. |
 
 ---
 
-## 3. Microservice Consumer Protocols
+## 2. Architectural & Technical Decisions Log
 
-The storefront interacts with the Weighted Ranking Engine via RESTful JSON endpoints:
+### Decision 1: Microservice Separation (Port 5000 vs Port 8000)
+- **Context**: The project required demonstrating how an independent e-commerce platform integrates with a dedicated B2B ranking engine microservice.
+- **Decision**: Keep the ranking engine on port `5000` and the Noise storefront on port `8000`. The storefront communicates exclusively via standard HTTP REST API requests (`requests` library) using `X-Company-ID: 1`.
+- **Rationale**: Demonstrates true B2B SaaS separation of concerns. The storefront has no direct database access to the ranking engine's internal tables, honoring multi-tenant boundaries.
 
-| Endpoint | Method | Purpose | Consumer Handling |
-| :--- | :--- | :--- | :--- |
-| `/api/v1/search` | `GET` / `POST` | Fetches ranked products according to dynamic weights | Enforces 1.5s timeout; falls back to local SQLite on failure. |
-| `/api/v1/categories` | `GET` | Retrieves active category definitions & default weights | Populates storefront filter sliders and spec bounds. |
-| `/api/v1/product/<id>` | `GET` | Fetches single product ranking attribution telemetry | Displays score breakdown modal on product detail page. |
+### Decision 2: Resilient In-Process Offline Fallback
+- **Context**: If the ranking engine microservice is halted, undergoing maintenance, or experiencing network latency, the customer storefront must not crash or display empty pages.
+- **Decision**: Implemented an automated fallback in `RankingEngineClient`. When an HTTP timeout or connection error occurs, the client catches `RequestException`, sets `engine_status = 'offline'`, and invokes `_fallback_local_search()`.
+- **Implementation**: The fallback uses local product attributes (`battery_life`, `price`, `rating`, `anc`) and applies the standard Min-Max normalization formula in memory to compute deterministic composite scores.
+- **Outcome**: 100% storefront availability regardless of microservice health.
 
-### Anti-Bias Sponsored Placement Compliance
-- In accordance with platform governance, sponsored products from the microservice are interleaved at a strict **1:5 ratio** (slots 1, 6, 11).
-- Sponsored cards in the storefront display clear visual disclosures (`SPONSORED PLACEMENT` gold badge) without altering organic score integrity.
+### Decision 3: Embedded Search Engine Admin Console (Iframe + Native Simulator)
+- **Context**: Store administrators need to configure category criteria weights, inspect active attributes, and manage sponsored placement slots without logging into a separate server portal.
+- **Decision**: Built a hybrid admin hub (`/admin/ranking-engine`) featuring:
+  1. An embedded, sandboxed iframe loaded directly from `http://localhost:5000/admin` with quick navigation tabs (`Operations Hub`, `Category Overview`, `Attributes & Weights`, `Sponsored Placements`, `Insights & Analytics`).
+  2. A native REST API Query Simulator that fetches live JSON from `http://localhost:5000/api/v1/search` and renders formatted scoring breakdowns.
+- **Outcome**: Store managers have single-pane-of-glass administrative control over search and ranking without duplicate code.
 
----
+### Decision 4: Interactive Client-Side Dynamic Weight Sliders (Smart Tuner)
+- **Context**: Modern shoppers expect personalized discovery. For example, a student may prioritize price and battery life, while an audiophile prioritizes Active Noise Cancelling (ANC) and sound quality.
+- **Decision**: Designed the **Smart Recommendation Tuner** drawer with 4 attribute sliders summing to 100%. Preset buttons (`Max Battery`, `Budget Value`, `Audiophile & ANC`, `Balanced`) automatically distribute weights.
+- **API Contract**: Sliders submit `custom_weights` to `/api/smart-rank`, which proxies the request to the engine's `POST /api/v1/search`. The engine re-ranks products on the fly using custom weights and returns real-time scored results.
 
-## 4. Engineering Log & Evolution
+### Decision 5: Transparent Mathematical Attribution ("Why Ranked #X?")
+- **Context**: E-commerce customers often distrust search rankings, suspecting hidden sponsor bias.
+- **Decision**: Built a dedicated mathematical attribution widget on both catalog cards and product detail pages (`/product/<id>`).
+- **Display Details**: Breaks down every scoring component:
+  $$\text{Raw Value} \longrightarrow \text{Normalized Value } (0.00 - 1.00) \times \text{Weight } (\%) = \text{Score Contribution}$$
+- **Outcome**: Total algorithmic transparency builds consumer trust while distinguishing organic score merits from sponsored overrides.
 
-### Phase 1: Foundation & Infrastructure
-- Initialized storefront Flask application with application factory pattern (`app/__init__.py`).
-- Established environment configuration classes (`DevelopmentConfig`, `TestingConfig`, `ProductionConfig`).
-- Implemented foundational SQLite models in `app/models.py` (`Product`, `CartItem`, `Order`, `OrderItem`).
-- Authored master dark-theme template `base.html` featuring `#00F2FE` electric cyan highlights, microservice health pill, and responsive navigation.
-- Built interactive `index.html` with hero showcase, category pills, product cards, and ranking engine architecture explanation.
-- Constructed comprehensive CSS design system (`app/static/css/style.css`) with typography tokens, glassmorphism cards, and responsive grids.
-- Documented component function inventory (`function_map.md`) and deployment guide (`docs/setup_guide.md`).
+### Decision 6: Session-Persisted Shopping Bag with Local Storage Sync
+- **Context**: Support end-to-end e-commerce flow without mandatory user registration.
+- **Decision**: Anonymous shopping sessions identified via UUID cookies in Flask sessions (`session['session_id']`). Cart items are linked in SQLite to the session UUID, enabling instant checkout with automated GST and shipping calculations.

@@ -1,162 +1,93 @@
 # Function Map — Noise E-Commerce Platform
 
-A directory of application components, modules, classes, and helper functions within the **Noise E-Commerce Platform**.
+> Comprehensive mapping of every route handler, database model method, API client method, and frontend controller function across the project.  
+> Developers and AI agents reference this map to locate implementations, understand dependencies, and verify requirements.
 
 ---
 
-## 1. Application Lifecycle & Entrypoint
+## 1. Application Factory & Global Context (`app/__init__.py`)
 
-### `run.py`
-- **Role**: Command-Line entrypoint to launch the storefront server.
-- **Logic**:
-  - Detects `FLASK_ENV` from environment (defaults to `development`).
-  - Calls `create_app(env)` to construct the application instance.
-  - Extracts `PORT` (default: 8000) and `DEBUG` status from application config.
-  - Prints startup banner including microservice connection target.
-  - Executes `app.run(host='0.0.0.0', port=port, debug=debug)`.
-
-### `app/__init__.py` (Application Factory)
-- **Functions**:
-  - `create_app(config_name: str = 'development') -> Flask`:
-    - Instantiates Flask app.
-    - Loads configuration object from `config.py`.
-    - Ensures persistent `instance/` storage directory exists.
-    - Attaches `SQLAlchemy` database instance (`db.init_app(app)`).
-    - Dynamically registers blueprints (`storefront` mounted at `/`, `admin` mounted at `/admin`).
-    - Establishes global context processor `inject_global_data()`.
-    - Initializes relational database tables (`db.create_all()`) within app context.
-  - `inject_global_data() -> dict`:
-    - Context processor injecting global template variables into all Jinja2 templates:
-      - `cart_count`: Total sum of item quantities for the current session.
-      - `cart_total`: Monetary sum of all item subtotals for the current session.
-      - `currency`: Configured currency symbol (defaults to `₹`).
-      - `engine_url`: Target URL of the B2B Ranking Engine (`http://localhost:5000`).
+| Function | File | Line Est. | Feature Area | Description |
+|---|---|---|---|---|
+| `create_app(config_name)` | `app/__init__.py` | 10 | Core Bootstrap | Application factory that configures extensions, registers `storefront` and `admin` blueprints, and initializes the SQLite database. |
+| `inject_globals()` | `app/__init__.py` | 35 | Context Processor | Injects `engine_status`, `cart_count`, and global store currency symbols across all Jinja2 templates automatically. |
 
 ---
 
-## 2. Configuration (`config.py`)
+## 2. Database Models & Business Logic (`app/models.py`)
 
-### `BaseConfig`
-- Baseline configuration shared across all environments:
-  - `SECRET_KEY`: Session encryption and CSRF signing key.
-  - `SQLALCHEMY_TRACK_MODIFICATIONS`: Set to `False` for performance optimization.
-  - `RANKING_ENGINE_URL`: Microservice target address (default: `http://localhost:5000`).
-  - `RANKING_COMPANY_ID`: Default tenant identifier for Noise (`1`).
-  - `PORT`: Storefront listener port (`8000`).
-  - `CURRENCY_SYMBOL`: `₹`.
-  - `FREE_SHIPPING_THRESHOLD`: `999.0`.
-  - `SHIPPING_FEE`: `99.0`.
-  - `GST_PERCENT`: `18.0`.
-
-### `DevelopmentConfig` (inherits `BaseConfig`)
-- `DEBUG = True`
-- `SQLALCHEMY_DATABASE_URI`: Local SQLite database at `instance/noise_ecommerce.db`.
-
-### `TestingConfig` (inherits `BaseConfig`)
-- `TESTING = True`
-- `WTF_CSRF_ENABLED = False`
-- `SQLALCHEMY_DATABASE_URI`: In-memory SQLite (`sqlite:///:memory:`).
-
-### `ProductionConfig` (inherits `BaseConfig`)
-- `DEBUG = False`
-- `SQLALCHEMY_DATABASE_URI`: Production DB URI or fallback instance SQLite DB.
+| Method / Property | Model | Line Est. | Feature Area | Description |
+|---|---|---|---|---|
+| `discount_pct` | `Product` | 26 | Pricing | Computes integer percentage discount comparing `original_price` against selling `price`. |
+| `specs` (getter/setter) | `Product` | 32 | Catalog Metadata | Serializes and deserializes the JSON string stored in `specs_json` into a native Python dictionary. |
+| `to_dict()` | `Product` | 48 | Serialization | Serializes product attributes, specs, ratings, and image URLs to JSON-compatible dictionary. |
+| `__repr__()` | `Product` | 68 | Debugging | Formats clean string representation of a Product instance with ID and name. |
+| `subtotal` | `CartItem` | 83 | Cart Operations | Calculates `product.price * quantity` rounded to 2 decimal places. |
+| `to_dict()` | `CartItem` | 89 | Serialization | Serializes a cart item and nested product entity for AJAX cart drawers. |
+| `to_dict()` | `Order` | 120 | Orders & Checkout | Formats order summary including items, tax, shipping, and total for receipt generation. |
+| `subtotal` | `OrderItem` | 145 | Order Accounting | Calculates line-item total based on historical purchase price and quantity. |
+| `to_dict()` | `OrderItem` | 150 | Serialization | Serializes order line-items for display in receipts and order history. |
 
 ---
 
-## 3. Data Models — Engine 1 (`app/models.py`)
+## 3. Weighted Ranking Engine Client (`app/engine_client.py`)
 
-### `Product(db.Model)`
-- **Table**: `products`
-- **Fields**:
-  - `id`: Integer, primary key.
-  - `name`: String(200), required.
-  - `slug`: String(200), unique, indexed, required.
-  - `category`: String(100), indexed, required.
-  - `price`: Float, required.
-  - `original_price`: Float, optional.
-  - `image_url`: String(500), optional.
-  - `description`: Text, optional.
-  - `rating`: Float, default `0.0`.
-  - `review_count`: Integer, default `0`.
-  - `battery_life`: Float, hours, default `0.0`.
-  - `anc`: Boolean, default `False`.
-  - `specs_json`: Text, serialized specifications dictionary.
-  - `in_stock`: Boolean, default `True`.
-  - `is_featured`: Boolean, default `False`.
-  - `is_sponsored`: Boolean, default `False`.
-  - `created_at`: DateTime (UTC).
-- **Properties & Methods**:
-  - `discount_pct -> int`: Calculates percentage markdown from `original_price` to `price`.
-  - `specs -> dict`: Deserializes JSON string into a Python dictionary with fault tolerance.
-  - `specs.setter`: Automatically serializes dictionary or list inputs into JSON string.
-  - `to_dict() -> dict`: Serializes all fields and computed properties for JSON responses.
-  - `__repr__() -> str`: Human-readable debug representation.
-
-### `CartItem(db.Model)`
-- **Table**: `cart_items`
-- **Fields**:
-  - `id`: Integer, primary key.
-  - `session_id`: String(100), indexed, required.
-  - `product_id`: Integer, foreign key to `products.id`.
-  - `quantity`: Integer, default `1`.
-- **Relationships & Properties**:
-  - `product`: Relationship to `Product`, backref `cart_items`.
-  - `subtotal -> float`: Computes `product.price * quantity` rounded to 2 decimals.
-  - `to_dict() -> dict`: Serializes cart item including nested product dictionary.
-
-### `Order(db.Model)`
-- **Table**: `orders`
-- **Fields**:
-  - `id`: Integer, primary key.
-  - `order_number`: String(50), unique, indexed.
-  - `customer_name`: String(100), required.
-  - `customer_email`: String(120), required.
-  - `address`: Text, required.
-  - `total_amount`: Float, required.
-  - `status`: String(50), default `'completed'`.
-  - `created_at`: DateTime (UTC).
-- **Relationships & Methods**:
-  - `items`: Cascading one-to-many relationship with `OrderItem` (`cascade='all, delete-orphan'`).
-  - `to_dict() -> dict`: Serializes order and all child `order_items`.
-
-### `OrderItem(db.Model)`
-- **Table**: `order_items`
-- **Fields**:
-  - `id`: Integer, primary key.
-  - `order_id`: Integer, foreign key to `orders.id`.
-  - `product_id`: Integer, foreign key to `products.id`.
-  - `quantity`: Integer, required.
-  - `unit_price`: Float, historical snapshot of price at purchase time.
-- **Relationships & Properties**:
-  - `product`: Relationship to `Product`.
-  - `subtotal -> float`: Computes `unit_price * quantity`.
-  - `to_dict() -> dict`: Serializes order item with product name snapshot.
+| Method | File | Line Est. | Feature Area | Description |
+|---|---|---|---|---|
+| `__init__()` | `app/engine_client.py` | 12 | Client Init | Initializes HTTP client with configurable base URL, tenant company ID, and request timeout. |
+| `base_url` (property) | `app/engine_client.py` | 18 | Dynamic Config | Resolves ranking engine base URL from Flask `current_app.config['RANKING_ENGINE_URL']` or fallback default `http://localhost:5000`. |
+| `company_id` (property) | `app/engine_client.py` | 26 | Tenant Resolution | Resolves tenant ID from Flask config `RANKING_COMPANY_ID` (default: `1`). |
+| `health_check()` | `app/engine_client.py` | 33 | Health Monitoring | Pings `GET /api/v1/categories`, measures network latency in milliseconds, and returns status (`online` / `offline`). |
+| `get_categories()` | `app/engine_client.py` | 69 | Schema Discovery | Retrieves all configured categories, attributes, and bounds for Tenant #1. Falls back to cached offline schema if engine is down. |
+| `get_product_breakdown()` | `app/engine_client.py` | 115 | Attribution | Calls `GET /api/v1/product/<id>` on engine to retrieve exact composite score breakdown. Falls back to local mathematical breakdown if offline. |
+| `search()` | `app/engine_client.py` | 134 | Search & Ranking | Central integration method. Executes `GET/POST /api/v1/search` with free-text queries and custom weight payloads. Handles sponsor interleaving and offline fallback. |
+| `_enrich_with_local_products()` | `app/engine_client.py` | 195 | Catalog Merge | Merges rich local database fields (product images, markdown descriptions, local slugs) into raw engine search result records. |
+| `_fallback_local_search()` | `app/engine_client.py` | 218 | Zero-Downtime Fallback | Executes in-process Min-Max normalization and weighted ranking over local SQLite database products when the remote engine is unreachable. |
+| `_fallback_product_breakdown()` | `app/engine_client.py` | 310 | Offline Attribution | Generates synthetic yet deterministic mathematical score breakdown matching engine formulas for local product pages during offline mode. |
 
 ---
 
-## 4. Templates & Interface — Engine 3
+## 4. Storefront Controller & Customer Routes (`app/storefront/routes.py`)
 
-### `app/templates/base.html`
-- Master layout template implementing:
-  - Responsive header with brand identity and glowing cyan symbol.
-  - Microservice health pill (`RANKING ENGINE :5000`) linked to `engine_url`.
-  - Navigation links: Shop, Categories, Orders.
-  - Interactive shopping cart button with dynamic badge bound to `cart_count`.
-  - Flashed alerts block supporting `success`, `error`/`danger`, `warning`, and `info`.
-  - Main extensible block `{% block content %}{% endblock %}`.
-  - Multi-column footer with student academic capstone disclaimer.
+| Route Handler | URL Pattern | Methods | Line Est. | Description |
+|---|---|---|---|---|
+| `get_session_id()` | Internal Helper | — | 10 | Generates or retrieves unique anonymous customer UUID stored in `session['session_id']`. |
+| `index()` | `/` | `GET` | 17 | Homepage presenting brand hero banners, featured categories, and top-ranked electronics fetched from engine. |
+| `shop()` | `/shop` | `GET`, `POST` | 41 | Main shopping catalog with keyword search `q`, category filtering, sorting, and dynamic weight application. |
+| `product_detail()` | `/product/<int:product_id>` | `GET` | 123 | Detailed product view showing images, specs, customer reviews, and the "Ranking Score Breakdown" widget. |
+| `smart_rank()` | `/api/smart-rank` | `GET`, `POST` | 167 | Asynchronous JSON endpoint invoked by client-side sliders to re-rank products dynamically with custom weight distribution. |
+| `product_breakdown_api()` | `/api/product-breakdown/<int:product_id>` | `GET` | 210 | Returns JSON representation of the mathematical score breakdown for interactive modal dialogs. |
+| `cart()` | `/cart` | `GET` | 230 | Displays current shopping bag, price subtotals, GST tax, and free shipping progress meter. |
+| `cart_add()` | `/cart/add/<int:product_id>` | `POST` | 260 | Adds a product to the user's session cart; increments quantity if already present. |
+| `cart_update()` | `/cart/update/<int:item_id>` | `POST` | 290 | Updates line-item quantity; deletes item if quantity is set to 0. |
+| `cart_remove()` | `/cart/remove/<int:item_id>` | `POST` | 315 | Removes an item from the shopping bag immediately. |
+| `checkout()` | `/checkout` | `POST` | 335 | Converts cart items into an active `Order`, generates unique order number, clears cart, and redirects to confirmation. |
+| `order_success()` | `/order/<order_number>` | `GET` | 365 | Renders order success confirmation page with tracking timeline and itemized receipt. |
 
-### `app/templates/index.html`
-- Extends `base.html` to provide:
-  - Hero banner with headline: *"Listen to the Noise Within — Smart Tech Powered by Multi-Criteria Ranked Search"*.
-  - Cyber-themed soundwave visual showcase with live telemetry preview.
-  - Category navigation pills for Smartwatches, Wireless Earbuds, Headphones, and Audio Gear.
-  - Featured products grid illustrating high-priority products with spec pills and pricing.
-  - Ranking engine integration explanation card detailing Min-Max normalization, dynamic weights, and 1:5 anti-bias sponsored interleaving.
+---
 
-### `app/static/css/style.css`
-- Design system stylesheet defining:
-  - Color variables with electric cyan (`#00F2FE`) and deep dark mode surfaces (`#080c14`, `#0e1526`).
-  - Typography settings for Space Grotesk, Plus Jakarta Sans, and JetBrains Mono.
-  - Glassmorphic card styling, gradient borders, and ambient background glow.
-  - Mobile responsive layouts covering viewport widths down to 480px.
+## 5. Store Operations & Admin Console (`app/admin/routes.py`)
+
+| Route Handler | URL Pattern | Methods | Line Est. | Description |
+|---|---|---|---|---|
+| `dashboard()` | `/admin/` | `GET` | 10 | Administrative overview displaying total store revenue, order counts, product inventory count, and live engine status. |
+| `products()` | `/admin/products` | `GET` | 47 | Inventory directory with category filters, stock search, and price listings. |
+| `new_product()` | `/admin/products/new` | `GET`, `POST` | 78 | Form to create a new product, define specs, and assign technical attributes (`battery_life`, `price`, `rating`, `anc`). |
+| `edit_product()` | `/admin/products/<int:product_id>/edit` | `GET`, `POST` | 122 | Form to edit existing product pricing, specifications, stock flags, or featured status. |
+| `delete_product()` | `/admin/products/<int:product_id>/delete` | `POST` | 147 | Removes a product record from the local database. |
+| `ranking_engine()` | `/admin/ranking-engine` | `GET` | 157 | Embedded Search Engine Admin Hub: integrates sandboxed iframe console (:5000) and native REST query simulator. |
+| `api_engine_status()` | `/admin/api/engine-status` | `GET` | 178 | Polling endpoint returning engine latency in ms, connectivity status, and active attribute weights in JSON format. |
+
+---
+
+## 6. Frontend Client-Side Controllers (`app/static/js/`)
+
+| Function | File | Line Est. | Feature Area | Description |
+|---|---|---|---|---|
+| `initRecommendationTuner()` | `storefront.js` | 12 | Smart Tuner | Initializes open/close event handlers, backdrop listeners, and weight slider state. |
+| `updateWeights()` | `storefront.js` | 44 | Live Calculation | Recalculates sum of active weight sliders, updates percentage badges, and toggles `valid`/`invalid` indicator class. |
+| `applyCustomWeights()` | `storefront.js` | 75 | AJAX Re-Rank | Submits custom weights to `/api/smart-rank`, updates product cards dynamically, and triggers smooth entrance animations. |
+| `initCartFeedback()` | `storefront.js` | 105 | Cart UX | Adds animated micro-interaction feedback when users click "Add to Bag". |
+| `initIframeToolbar()` | `admin_ranking.js` | 13 | Admin Embed | Manages tab buttons above the embedded engine iframe, switching URLs between Operations Hub, Category, and Insights. |
+| `initEngineHealthCheck()`| `admin_ranking.js` | 31 | Latency Monitor | Polls `/admin/api/engine-status` in the background and updates latency text and pulse dot in the admin navbar. |
+| `initRankingSimulator()` | `admin_ranking.js` | 58 | REST Simulator | Dispatches test queries to the engine REST API directly from the admin UI and renders syntax-highlighted JSON responses. |
