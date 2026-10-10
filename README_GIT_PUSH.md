@@ -1,9 +1,9 @@
-# Git Push Guide — Week 2 (Vaibhav)
+# Git Push Guide — Week 2 (Shrinivas)
 
 **Milestone**: Week 2 &bull; Phase 2 — Authentication, Multi-Tenancy & Engine REST Client  
-**Author**: Vaibhav (Dev-A / Dev-1) &bull; Roll: `01fe24bca300`  
+**Author**: Shrinivas (Dev-B / Dev-2) &bull; Roll: `01fe24bca311`  
 **Repository**: `e-commerce-website`  
-**Target Branch**: `week2-engine-client`  
+**Target Branch**: `week2-status-banner`  
 
 ---
 
@@ -12,8 +12,9 @@
 Extract the contents of this zip file directly into your local **`e-commerce-website`** repository root directory.
 
 The following files are packaged in this update:
-- `app/engine_client.py`
-- `tests/test_engine_client.py`
+- `app/storefront/__init__.py`
+- `knowledgebase.md`
+- `function_map.md`
 
 ---
 
@@ -26,9 +27,9 @@ git checkout main
 git pull origin main
 ```
 
-### Step 2: Create and checkout the feature branch `week2-engine-client`
+### Step 2: Create and checkout the feature branch `week2-status-banner`
 ```bash
-git checkout -b week2-engine-client
+git checkout -b week2-status-banner
 ```
 
 ### Step 3: Copy packaged files into repository
@@ -36,15 +37,15 @@ Extract this zip file into your `e-commerce-website` folder, preserving the rela
 
 ### Step 4: Stage, commit, and push to GitHub
 ```bash
-git add "app/engine_client.py" "tests/test_engine_client.py"
-git commit -m "[Dev-A] P2: Implement RankingEngineClient with REST calls and offline fallback"
-git push -u origin week2-engine-client
+git add "app/storefront/__init__.py" "knowledgebase.md" "function_map.md"
+git commit -m "[Dev-B] P2: Add live engine status banner and connection indicators"
+git push -u origin week2-status-banner
 ```
 
 ### Step 5: Merge into `main` and synchronize remote
 ```bash
 git checkout main
-git merge week2-engine-client
+git merge week2-status-banner
 git push origin main
 ```
 
