@@ -1,0 +1,273 @@
+{% extends 'base.html' %}
+
+{% block title %}Noise — Official Store | Smart Tech & Ranked Audio{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="relative bg-gradient-to-br from-slate-950 via-slate-900 to-rose-950 text-white overflow-hidden py-16 lg:py-24">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-semibold uppercase tracking-wider mb-6">
+                    <i class="fa-solid fa-sparkles"></i> Next-Gen Smart Wearables
+                </div>
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight">
+                    Hear The Future.<br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-amber-300">
+                        Engineered For Sound.
+                    </span>
+                </h1>
+                <p class="mt-4 text-base sm:text-lg text-slate-300 max-w-lg">
+                    Discover India's top smartwatches, active noise-cancelling earbuds, and wireless audio — crafted for clarity and all-day performance.
+                </p>
+                <div class="mt-8 flex flex-wrap gap-4">
+                    <a href="{{ url_for('storefront.shop') }}" class="px-7 py-3.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl shadow-lg shadow-rose-600/30 transition transform hover:-translate-y-0.5">
+                        Shop Catalog <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </a>
+                    <a href="{{ url_for('storefront.shop', category='Wireless Earbuds') }}" class="px-6 py-3.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 font-semibold rounded-xl border border-slate-700 transition">
+                        <i class="fa-solid fa-headphones mr-2"></i> Explore Earbuds
+                    </a>
+                </div>
+
+                <!-- Consumer Trust Badges -->
+                <div class="mt-8 flex items-center gap-3 text-xs text-slate-400">
+                    <div class="flex items-center gap-1.5 bg-slate-800/60 px-3 py-1.5 rounded-lg border border-slate-700 text-slate-200 font-medium">
+                        <i class="fa-solid fa-award text-amber-400"></i>
+                        <span>Featured Picks</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 bg-slate-800/60 px-3 py-1.5 rounded-lg border border-slate-700 text-slate-200 font-medium">
+                        <i class="fa-solid fa-star text-rose-400"></i>
+                        <span>Top Rated Tech</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hero Image Showcase -->
+            <div class="relative flex justify-center lg:justify-end">
+                <div class="relative w-full max-w-md bg-gradient-to-tr from-rose-500/20 to-purple-500/10 p-4 rounded-3xl backdrop-blur-xl border border-white/10 shadow-2xl">
+                    <div class="bg-slate-900/60 rounded-2xl h-80 flex items-center justify-center p-4">
+                        <img src="https://www.gonoise.com/cdn/shop/files/image_2023_09_19T10_11_28_596Z_grande.png?v=1695119844" alt="Noise Buds Hero" class="max-h-full max-w-full object-contain drop-shadow-2xl">
+                    </div>
+                    <div class="absolute -bottom-6 -left-6 bg-slate-900/90 backdrop-blur-md p-4 rounded-2xl border border-slate-700 shadow-xl flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-rose-600 flex items-center justify-center text-white font-black text-xl">
+                            #1
+                        </div>
+                        <div>
+                            <div class="text-xs text-rose-400 font-bold uppercase">Featured Picks</div>
+                            <div class="text-white font-bold text-sm">Active Noise Cancellation</div>
+                            <div class="text-slate-400 text-xs">Top Rated Tech</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Categories Bar -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-20">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <a href="{{ url_for('storefront.shop', category='Smartwatches') }}" class="bg-white p-5 rounded-2xl shadow-md border border-slate-100 hover:shadow-lg hover:border-rose-200 transition group">
+            <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center mb-3 group-hover:scale-110 transition">
+                <i class="fa-solid fa-clock text-lg"></i>
+            </div>
+            <h3 class="font-bold text-slate-800 text-sm">Smartwatches</h3>
+            <p class="text-xs text-slate-500 mt-1">AMOLED & BT Calling</p>
+        </a>
+
+        <a href="{{ url_for('storefront.shop', category='Wireless Earbuds') }}" class="bg-white p-5 rounded-2xl shadow-md border border-slate-100 hover:shadow-lg hover:border-rose-200 transition group">
+            <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-3 group-hover:scale-110 transition">
+                <i class="fa-solid fa-headphones-simple text-lg"></i>
+            </div>
+            <h3 class="font-bold text-slate-800 text-sm">Wireless Earbuds</h3>
+            <p class="text-xs text-slate-500 mt-1">ANC & Long Playtime</p>
+        </a>
+
+        <a href="{{ url_for('storefront.shop', category='Neckbands') }}" class="bg-white p-5 rounded-2xl shadow-md border border-slate-100 hover:shadow-lg hover:border-rose-200 transition group">
+            <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-3 group-hover:scale-110 transition">
+                <i class="fa-solid fa-wave-square text-lg"></i>
+            </div>
+            <h3 class="font-bold text-slate-800 text-sm">Neckbands</h3>
+            <p class="text-xs text-slate-500 mt-1">80hr Battery & Bass</p>
+        </a>
+
+        <a href="{{ url_for('storefront.shop', category='Smart Eyewear') }}" class="bg-white p-5 rounded-2xl shadow-md border border-slate-100 hover:shadow-lg hover:border-rose-200 transition group">
+            <div class="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center mb-3 group-hover:scale-110 transition">
+                <i class="fa-solid fa-glasses text-lg"></i>
+            </div>
+            <h3 class="font-bold text-slate-800 text-sm">Smart Eyewear</h3>
+            <p class="text-xs text-slate-500 mt-1">Audio Sunglasses</p>
+        </a>
+    </div>
+</div>
+
+<!-- TOP RANKED BY ENGINE SECTION -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-4">
+        <div>
+            <div class="flex items-center gap-2 text-rose-600 text-xs font-bold uppercase tracking-wider mb-1">
+                <i class="fa-solid fa-sparkles"></i> Curated Hardware
+            </div>
+            <!-- Top Ranked by Engine -->
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight" data-section="Top Ranked by Engine">Top Ranked Picks</h2>
+            <p class="text-slate-500 text-sm mt-1">
+                Our highest rated audio gear and smart wearables designed for superior performance.
+            </p>
+        </div>
+        <div class="flex items-center gap-3">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                <i class="fa-solid fa-award text-rose-600"></i> Top Rated Tech
+            </span>
+            <a href="{{ url_for('storefront.shop') }}" class="text-sm font-semibold text-rose-600 hover:text-rose-700 flex items-center gap-1">
+                View All <i class="fa-solid fa-chevron-right text-xs"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Product Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for item in ranked_products %}
+        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-xl hover:border-rose-200 transition overflow-hidden flex flex-col group relative">
+            <!-- Rank Badge -->
+            <div class="absolute top-3 left-3 z-10 flex items-center gap-1.5 bg-slate-900/90 text-white text-xs font-black px-2.5 py-1 rounded-lg backdrop-blur-md shadow">
+                <span class="text-amber-400">#{{ item.rank or loop.index }}</span>
+                <span class="text-slate-400 text-[10px] font-normal">Rank</span>
+            </div>
+
+            <!-- Sponsored Badge if applicable -->
+            {% if item.is_sponsored %}
+            <div class="absolute top-3 right-3 z-10 bg-amber-500 text-slate-950 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded shadow">
+                Featured Sponsor
+            </div>
+            {% endif %}
+
+            <!-- Product Image -->
+            <div class="h-56 bg-slate-50 relative overflow-hidden flex items-center justify-center p-3">
+                <img src="{{ item.image_url }}" 
+                     alt="{{ item.name }}" class="max-h-full max-w-full object-contain group-hover:scale-105 transition duration-500">
+            </div>
+
+            <!-- Product Card Content -->
+            <div class="p-5 flex-1 flex flex-col">
+                <h3 class="font-bold text-slate-900 text-base mb-1.5 group-hover:text-rose-600 transition">
+                    <a href="{{ url_for('storefront.product_detail', product_id=item.local_product_id or item.product_id) }}">
+                        {{ item.name }}
+                    </a>
+                </h3>
+
+                <!-- Customer Rating -->
+                <div class="flex items-center gap-1.5 text-xs mb-3">
+                    <span class="inline-flex items-center gap-1 bg-amber-50 text-amber-700 px-2 py-0.5 rounded-md font-bold text-xs border border-amber-200">
+                        <i class="fa-solid fa-star text-amber-500 text-[10px]"></i>
+                        {{ item.rating or item.attributes.get('Rating', {}).get('display_value', 4.3) }}
+                    </span>
+                    <span class="text-slate-400 text-xs font-normal">({{ item.review_count or 145 }} reviews)</span>
+                </div>
+
+                <!-- Attributes Quick Specs -->
+                <div class="grid grid-cols-2 gap-2 text-xs text-slate-600 mb-4 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                    {% if item.display_badges and item.display_badges|length >= 1 %}
+                        {% for badge in item.display_badges[:2] %}
+                        <div class="flex items-center gap-1.5 truncate" title="{{ badge.name }}: {{ badge.value }}">
+                            <i class="{{ badge.icon or 'fa-solid fa-circle-info text-slate-400' }}"></i>
+                            <span class="truncate"><span class="font-medium text-slate-700">{{ badge.name }}:</span> {{ badge.value }}</span>
+                        </div>
+                        {% endfor %}
+                        {% if item.display_badges|length == 1 %}
+                        <div></div>
+                        {% endif %}
+                    {% else %}
+                        <div class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-battery-half text-slate-400"></i>
+                            <span>{{ item.attributes.get('Battery Life (hours)', {}).get('display_value', '30') }}h Battery</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-shield-halved text-slate-400"></i>
+                            <span>ANC: {{ item.attributes.get('Active Noise Cancelling', {}).get('display_value', 'YES') }}</span>
+                        </div>
+                    {% endif %}
+                    <div class="flex items-center gap-1.5 font-bold text-slate-800 col-span-2">
+                        <span>{{ currency }}{{ '{:,.0f}'.format(item.price or item.attributes.get('Price (INR)', {}).get('display_value', 2999)) }}</span>
+                    </div>
+                </div>
+
+                <!-- Card Actions -->
+                <div class="mt-auto pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
+                    <a href="{{ url_for('storefront.product_detail', product_id=item.local_product_id or item.product_id) }}" 
+                       class="text-xs font-semibold text-slate-600 hover:text-slate-900 flex items-center gap-1">
+                        View Details <i class="fa-solid fa-chevron-right text-[10px] text-slate-400"></i>
+                    </a>
+
+                    <form action="{{ url_for('storefront.add_to_cart', product_id=item.local_product_id or item.product_id) }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <button type="submit" class="px-4 py-2 bg-slate-900 hover:bg-rose-600 text-white text-xs font-bold rounded-lg transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-plus text-[10px]"></i> Add to Cart
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- FEATURED NOISE CATALOG SECTION -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20">
+    <div class="flex justify-between items-end mb-8">
+        <div>
+            <div class="text-rose-600 text-xs font-bold uppercase tracking-wider mb-1">
+                Featured Flagships
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Noise Signature Hardware</h2>
+            <p class="text-slate-500 text-sm mt-1">Handpicked bestsellers engineered for audio clarity and health metrics.</p>
+        </div>
+        <a href="{{ url_for('storefront.shop') }}" class="text-sm font-semibold text-rose-600 hover:text-rose-700">
+            Browse All ({{ featured_products|length }}+) &rarr;
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {% for prod in featured_products %}
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg transition overflow-hidden flex flex-col group">
+            <div class="h-48 bg-slate-50 relative overflow-hidden flex items-center justify-center p-3">
+                <img src="{{ prod.image_url }}" alt="{{ prod.name }}" class="max-h-full max-w-full object-contain group-hover:scale-105 transition duration-300">
+                {% if prod.discount_pct > 0 %}
+                <span class="absolute top-2.5 right-2.5 bg-rose-600 text-white text-[11px] font-bold px-2 py-0.5 rounded-full shadow">
+                    {{ prod.discount_pct }}% OFF
+                </span>
+                {% endif %}
+            </div>
+            <div class="p-4 flex-1 flex flex-col">
+                <span class="text-[11px] text-slate-500 font-semibold uppercase">{{ prod.category }}</span>
+                <h4 class="font-bold text-slate-900 text-sm mt-1 mb-2 group-hover:text-rose-600 transition">
+                    <a href="{{ url_for('storefront.product_detail', product_id=prod.id) }}">{{ prod.name }}</a>
+                </h4>
+                <div class="flex items-center gap-1.5 text-xs mb-3">
+                    <span class="inline-flex items-center gap-1 bg-amber-50 text-amber-700 px-2 py-0.5 rounded-md font-bold text-xs border border-amber-200">
+                        <i class="fa-solid fa-star text-amber-500 text-[10px]"></i> {{ prod.rating }}
+                    </span>
+                    <span class="text-slate-400 text-xs font-normal">({{ prod.review_count }} reviews)</span>
+                    {% if prod.anc %}
+                    <span class="ml-auto text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">ANC</span>
+                    {% endif %}
+                </div>
+                <div class="mt-auto flex items-center justify-between pt-3 border-t border-slate-100">
+                    <div>
+                        <span class="font-extrabold text-slate-900 text-base">{{ currency }}{{ '{:,.0f}'.format(prod.price) }}</span>
+                        {% if prod.original_price %}
+                        <span class="text-xs text-slate-400 line-through ml-1">{{ currency }}{{ '{:,.0f}'.format(prod.original_price) }}</span>
+                        {% endif %}
+                    </div>
+                    <form action="{{ url_for('storefront.add_to_cart', product_id=prod.id) }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <button type="submit" class="p-2 bg-slate-100 hover:bg-rose-600 hover:text-white rounded-lg text-slate-700 transition" title="Add to Cart">
+                            <i class="fa-solid fa-bag-shopping text-xs"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
