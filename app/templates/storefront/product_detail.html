@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} — Specs & Details | Noise{% endblock %}
+
+{% block content %}
+<!-- Breadcrumbs -->
+<div class="bg-white border-b border-slate-200 py-3">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-xs text-slate-500 flex items-center gap-2">
+        <a href="{{ url_for('storefront.index') }}" class="hover:text-slate-800">Home</a>
+        <i class="fa-solid fa-chevron-right text-[10px]"></i>
+        <a href="{{ url_for('storefront.shop') }}" class="hover:text-slate-800">Shop</a>
+        <i class="fa-solid fa-chevron-right text-[10px]"></i>
+        <span class="text-slate-800 font-semibold truncate">{{ product.name }}</span>
+    </div>
+</div>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <!-- Product Image Gallery -->
+        <div>
+            <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm overflow-hidden flex items-center justify-center">
+                <img src="{{ product.image_url }}" alt="{{ product.name }}" class="w-full max-h-[450px] object-contain rounded-2xl">
+            </div>
+            
+            <!-- Quality & Guarantee Badge -->
+            {% if is_sponsored %}
+            <div class="mt-4 p-3.5 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-between text-xs">
+                <div class="flex items-center gap-2 text-amber-900 font-semibold">
+                    <i class="fa-solid fa-award text-amber-500 text-sm"></i>
+                    <span>Featured Selection</span>
+                </div>
+                <span class="px-2 py-0.5 rounded bg-amber-200 text-amber-900 font-bold text-[10px]">SPONSORED</span>
+            </div>
+            {% else %}
+            <div class="mt-4 p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs text-slate-600">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-shield-check text-emerald-500 text-sm"></i>
+                    <span>100% Genuine Noise Official Hardware</span>
+                </div>
+                <span class="text-slate-400 font-medium">1 Year Warranty</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Product Details & Add to Cart -->
+        <div>
+            <div class="flex items-center gap-2 mb-2">
+                <span class="px-2.5 py-1 rounded-full bg-rose-50 text-rose-600 text-xs font-bold uppercase tracking-wider">
+                    {{ product.category }}
+                </span>
+                {% if product.anc %}
+                <span class="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold uppercase tracking-wider">
+                    <i class="fa-solid fa-shield-halved"></i> Active ANC
+                </span>
+                {% endif %}
+            </div>
+
+            <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-tight">
+                {{ product.name }}
+            </h1>
+
+            <!-- Ratings -->
+            <div class="flex items-center gap-3 mt-3">
+                <div class="flex items-center gap-1 text-amber-500 font-bold text-sm">
+                    <i class="fa-solid fa-star"></i>
+                    <span>{{ product.rating }}</span>
+                </div>
+                <span class="text-slate-300">|</span>
+                <span class="text-xs text-slate-500">{{ product.review_count }} verified buyer reviews</span>
+                <span class="text-slate-300">|</span>
+                <span class="text-xs font-semibold {% if product.in_stock %}text-emerald-600{% else %}text-rose-600{% endif %}">
+                    {% if product.in_stock %}In Stock & Ready to Ship{% else %}Out of Stock{% endif %}
+                </span>
+            </div>
+
+            <!-- Price -->
+            <div class="mt-6 flex items-baseline gap-3">
+                <span class="text-3xl sm:text-4xl font-black text-slate-900">
+                    {{ currency }}{{ '{:,.0f}'.format(product.price) }}
+                </span>
+                {% if product.original_price %}
+                <span class="text-lg text-slate-400 line-through">
+                    {{ currency }}{{ '{:,.0f}'.format(product.original_price) }}
+                </span>
+                <span class="text-sm font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md">
+                    {{ product.discount_pct }}% OFF
+                </span>
+                {% endif %}
+            </div>
+
+            <p class="mt-4 text-sm text-slate-600 leading-relaxed">
+                {{ product.description }}
+            </p>
+
+            <!-- Quick Specs Row -->
+            <div class="grid grid-cols-2 gap-3 mt-6 p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                <div class="flex items-center gap-2 text-xs text-slate-700">
+                    <i class="fa-solid fa-battery-full text-slate-400 text-base"></i>
+                    <div>
+                        <div class="text-[10px] text-slate-400 uppercase font-semibold">Battery Life</div>
+                        <div class="font-bold">{{ product.battery_life }} Hours</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 text-xs text-slate-700">
+                    <i class="fa-solid fa-shield-halved text-slate-400 text-base"></i>
+                    <div>
+                        <div class="text-[10px] text-slate-400 uppercase font-semibold">Noise Cancelling</div>
+                        <div class="font-bold">{% if product.anc %}Active ANC Included{% else %}Passive Isolation{% endif %}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add to Cart Form -->
+            <form action="{{ url_for('storefront.add_to_cart', product_id=product.id) }}" method="POST" class="mt-8 flex gap-4">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div class="w-24">
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Quantity</label>
+                    <input type="number" name="quantity" value="1" min="1" max="10" 
+                           class="w-full text-center py-3 border border-slate-300 rounded-xl font-bold text-sm focus:ring-2 focus:ring-rose-500 focus:outline-none">
+                </div>
+                <div class="flex-1">
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">&nbsp;</label>
+                    <button type="submit" class="w-full py-3.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl shadow-lg shadow-rose-600/20 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-bag-shopping"></i> Add to Cart
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Product Highlights & Key Features Section -->
+    <!-- Why is this ranked: Replaced internal engine explainability with customer-facing specifications -->
+    <div class="mt-16 bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
+        <div class="pb-6 border-b border-slate-100">
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 text-rose-600 text-xs font-bold uppercase tracking-wider mb-2">
+                <i class="fa-solid fa-sparkles text-rose-500"></i> Premium Engineering
+            </div>
+            <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                Product Highlights &amp; Key Features
+            </h2>
+            <p class="text-xs text-slate-500 mt-1">
+                Engineered for maximum acoustic fidelity, all-day battery life, and ergonomic comfort.
+            </p>
+        </div>
+
+        <!-- Key Feature Highlights -->
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200/80">
+                <div class="w-12 h-12 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center mb-4 text-xl">
+                    <i class="fa-solid fa-battery-full"></i>
+                </div>
+                <h4 class="font-bold text-slate-900 text-sm mb-1">Extended Playtime</h4>
+                <p class="text-xs text-slate-600">
+                    Up to {{ product.battery_life }} hours of playback on a single charge with fast charging support.
+                </p>
+            </div>
+
+            <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200/80">
+                <div class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center mb-4 text-xl">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h4 class="font-bold text-slate-900 text-sm mb-1">Acoustic Engineering</h4>
+                <p class="text-xs text-slate-600">
+                    {% if product.anc %}Advanced Active Noise Cancellation (ANC) with dedicated ambient awareness mode.{% else %}Ergonomic acoustic seal engineered for rich bass and clean treble balance.{% endif %}
+                </p>
+            </div>
+
+            <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200/80">
+                <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center mb-4 text-xl">
+                    <i class="fa-solid fa-star"></i>
+                </div>
+                <h4 class="font-bold text-slate-900 text-sm mb-1">Community Approved</h4>
+                <p class="text-xs text-slate-600">
+                    Rated {{ product.rating }} / 5.0 stars with {{ product.review_count }} verified buyer testimonials.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Tech Specs Table -->
+    {% if product.specs %}
+    <div class="mt-12 bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
+        <h3 class="text-lg font-bold text-slate-900 mb-4">Technical Specifications</h3>
+        <div class="divide-y divide-slate-100">
+            {% for key, val in product.specs.items() %}
+            <div class="py-3 grid grid-cols-3 text-xs sm:text-sm">
+                <span class="font-semibold text-slate-500">{{ key }}</span>
+                <span class="col-span-2 text-slate-800 font-medium">{{ val }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Related Products -->
+    {% if related_products %}
+    <div class="mt-16">
+        <h3 class="text-xl font-bold text-slate-900 mb-6">Similar In This Category</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {% for rel in related_products %}
+            <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition">
+                <img src="{{ rel.image_url }}" alt="{{ rel.name }}" class="w-full h-36 object-cover rounded-xl mb-3">
+                <h4 class="font-bold text-slate-900 text-xs truncate">
+                    <a href="{{ url_for('storefront.product_detail', product_id=rel.id) }}" class="hover:text-rose-600">{{ rel.name }}</a>
+                </h4>
+                <div class="flex items-center gap-1 text-[11px] text-amber-500 font-bold mt-1">
+                    <i class="fa-solid fa-star text-[10px]"></i>
+                    <span>{{ rel.rating }}</span>
+                    <span class="text-slate-400 font-normal">({{ rel.review_count }})</span>
+                </div>
+                <div class="mt-2 flex justify-between items-center text-xs font-bold">
+                    <span>{{ currency }}{{ '{:,.0f}'.format(rel.price) }}</span>
+                    <a href="{{ url_for('storefront.product_detail', product_id=rel.id) }}" class="text-rose-600 hover:underline">View &rarr;</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
