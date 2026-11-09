@@ -1,0 +1,659 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Search Engine Admin — Weighted Ranking Engine B2B Console{% endblock %}
+{% block header_title %}Search Engine Admin Panel & Calibration{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Section 1: Native Status Check & Latency Monitor -->
+    <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-slate-100">
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="w-3 h-3 rounded-full {% if health.status == 'online' %}bg-emerald-500 animate-pulse{% else %}bg-amber-500{% endif %}"></span>
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">B2B Integration Gateway</span>
+                </div>
+                <h3 class="text-2xl font-black text-slate-900 tracking-tight">Weighted Ranking Engine</h3>
+                <p class="text-xs text-slate-500 mt-1">
+                    Microservice endpoint: <code class="px-2 py-0.5 rounded bg-slate-100 text-slate-800 font-mono text-[11px]">{{ engine_url }}</code>
+                </p>
+            </div>
+
+            <!-- Health Metric Badges -->
+            <div class="flex items-center gap-3">
+                <div class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-2xl text-center">
+                    <div class="text-[10px] text-slate-400 font-bold uppercase">Status</div>
+                    <div class="text-sm font-black {% if health.status == 'online' %}text-emerald-600{% else %}text-amber-600{% endif %} capitalize">
+                        {{ health.status }}
+                    </div>
+                </div>
+                <div class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-2xl text-center">
+                    <div class="text-[10px] text-slate-400 font-bold uppercase">Latency</div>
+                    <div class="text-sm font-black text-slate-900">
+                        {{ health.latency_ms or 'N/A' }} ms
+                    </div>
+                </div>
+                <div class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-2xl text-center">
+                    <div class="text-[10px] text-slate-400 font-bold uppercase">Tenant Company</div>
+                    <div class="text-sm font-black text-rose-600">
+                        ID: {{ company_id }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Schema Inspection & Category Ranked Products -->
+        <div class="pt-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
+                <h4 class="font-extrabold text-slate-900 text-base flex items-center gap-2">
+                    <i class="fa-solid fa-database text-rose-600"></i> Engine Schema & Attribute Weight Configuration
+                </h4>
+                <span class="text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+                    {{ categories_data.get('categories', [])|length }} Active Categories Configured
+                </span>
+            </div>
+
+            {% for cat in categories_data.get('categories', []) %}
+            <div class="mb-8 p-6 rounded-3xl bg-slate-50 border border-slate-200 shadow-sm">
+                <!-- Category Banner -->
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 mb-4 border-b border-slate-200/70">
+                    <div class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-xl bg-rose-600 text-white flex items-center justify-center font-black text-sm shadow-sm">
+                            {{ cat.category_id }}
+                        </span>
+                        <div>
+                            <h5 class="font-black text-slate-900 text-base">{{ cat.name }}</h5>
+                            <span class="text-xs text-slate-500 font-medium">
+                                Category ID: <code class="font-mono text-[11px] bg-white px-1.5 py-0.5 rounded border border-slate-200">{{ cat.category_id }}</code>
+                                &bull; {{ cat.product_count }} products indexed by engine
+                                &bull; <strong class="text-rose-600 font-bold">{{ (cat.ranked_products or [])|length }} catalog products actively ranked</strong>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-slate-600 bg-white border border-slate-200 px-3 py-1 rounded-xl">
+                            Attributes: <strong class="text-slate-900">{{ cat.attributes|length }}</strong>
+                        </span>
+                        <a href="#simulator-section" onclick="switchSimulatorCategory({{ cat.category_id }})" class="text-xs font-bold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-1 rounded-xl transition">
+                            <i class="fa-solid fa-sliders text-[11px]"></i> Tune Weights
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Section A: Schema Bounds & Weight Configuration -->
+                <div class="mb-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <h6 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-layer-group text-slate-400"></i> Section A: Attribute Schema & Bound Rules
+                        </h6>
+                        <span class="text-[11px] text-slate-400 font-medium">Weights calibrated to 100% total</span>
+                    </div>
+
+                    <div class="overflow-x-auto bg-white rounded-2xl border border-slate-200 shadow-2xs">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-100/80 text-[10px] font-bold text-slate-500 uppercase border-b border-slate-200">
+                                <tr>
+                                    <th class="px-4 py-2.5">Attribute Name</th>
+                                    <th class="px-4 py-2.5">Data Type</th>
+                                    <th class="px-4 py-2.5">Value Bounds (Min - Max)</th>
+                                    <th class="px-4 py-2.5">Direction</th>
+                                    <th class="px-4 py-2.5">Calibrated Weight</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 text-slate-700">
+                                {% for attr in cat.attributes %}
+                                <tr class="hover:bg-slate-50/60 transition">
+                                    <td class="px-4 py-2.5 font-bold text-slate-900">{{ attr.name }}</td>
+                                    <td class="px-4 py-2.5">
+                                        <span class="px-2 py-0.5 rounded bg-slate-100 text-[10px] font-mono text-slate-600 uppercase border border-slate-200/60">{{ attr.data_type }}</span>
+                                    </td>
+                                    <td class="px-4 py-2.5 text-slate-600 font-mono text-[11px]">{{ attr.min_value }} - {{ attr.max_value }}</td>
+                                    <td class="px-4 py-2.5">
+                                        {% if attr.lower_is_better %}
+                                        <span class="text-amber-700 font-semibold flex items-center gap-1 bg-amber-50 px-2 py-0.5 rounded-full w-max border border-amber-200 text-[10px]">
+                                            <i class="fa-solid fa-arrow-down text-[9px]"></i> Lower is better (Cost)
+                                        </span>
+                                        {% else %}
+                                        <span class="text-emerald-700 font-semibold flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-full w-max border border-emerald-200 text-[10px]">
+                                            <i class="fa-solid fa-arrow-up text-[9px]"></i> Higher is better (Benefit)
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-4 py-2.5">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-20 bg-slate-200 h-2 rounded-full overflow-hidden">
+                                                <div class="bg-rose-600 h-full rounded-full" style="width: {{ attr.weight }}%;"></div>
+                                            </div>
+                                            <span class="font-black text-slate-900 text-xs">{{ attr.weight }}%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Section B: Ranked Products in this Category (Computed by Engine) -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <h6 class="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-trophy text-amber-500"></i> Section B: Ranked Products in this Category (Computed by Engine)
+                        </h6>
+                        <span class="text-[11px] font-bold text-slate-500">
+                            {{ (cat.ranked_products or [])|length }} Ranked Products
+                        </span>
+                    </div>
+
+                    {% if cat.ranked_products and cat.ranked_products|length > 0 %}
+                    <div class="overflow-x-auto bg-white rounded-2xl border border-slate-200 shadow-2xs">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-100/80 text-[10px] font-bold text-slate-500 uppercase border-b border-slate-200">
+                                <tr>
+                                    <th class="px-4 py-3">Engine Rank</th>
+                                    <th class="px-4 py-3">Product Name & Tag</th>
+                                    <th class="px-4 py-3">Base Price</th>
+                                    <th class="px-4 py-3">Composite Score</th>
+                                    <th class="px-4 py-3">Attribute Breakdown (Raw / Normalized)</th>
+                                    <th class="px-4 py-3">Stock Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                {% for p in cat.ranked_products %}
+                                <tr class="hover:bg-slate-50/80 transition">
+                                    <!-- Rank Badge -->
+                                    <td class="px-4 py-3">
+                                        {% if p.rank == 1 %}
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-black bg-amber-400 text-amber-950 border border-amber-300 shadow-sm">
+                                            <i class="fa-solid fa-trophy mr-1 text-[11px] text-amber-900"></i> #1
+                                        </span>
+                                        {% elif p.rank == 2 %}
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-black bg-slate-200 text-slate-800 border border-slate-300 shadow-sm">
+                                            <i class="fa-solid fa-medal mr-1 text-[11px] text-slate-600"></i> #2
+                                        </span>
+                                        {% elif p.rank == 3 %}
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-black bg-amber-700 text-white border border-amber-600 shadow-sm">
+                                            <i class="fa-solid fa-award mr-1 text-[11px] text-amber-200"></i> #3
+                                        </span>
+                                        {% else %}
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                                            #{{ p.rank }}
+                                        </span>
+                                        {% endif %}
+                                    </td>
+
+                                    <!-- Product Thumbnail + Name + Tag -->
+                                    <td class="px-4 py-3">
+                                        <div class="flex items-center gap-3">
+                                            <img src="{{ p.image_url }}" alt="{{ p.name }}" 
+                                                 class="w-10 h-10 object-cover rounded-xl bg-slate-100 border border-slate-200 flex-shrink-0"
+                                                 onerror="this.src='https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600'">
+                                            <div>
+                                                <div class="font-extrabold text-slate-900 text-xs">{{ p.name }}</div>
+                                                <div class="flex items-center gap-1.5 mt-0.5">
+                                                    <span class="text-[10px] text-slate-500 font-medium">{{ p.category_name or cat.name }}</span>
+                                                    {% if p.attributes and p.attributes.get('Active Noise Cancelling', {}).get('raw_value') == 1.0 %}
+                                                    <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">ANC</span>
+                                                    {% endif %}
+                                                    {% if p.is_sponsored %}
+                                                    <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-purple-100 text-purple-800 border border-purple-200">SPONSORED</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <!-- Base Price -->
+                                    <td class="px-4 py-3 font-black text-slate-900 text-xs whitespace-nowrap">
+                                        {{ currency }}{{ '{:,.0f}'.format(p.price) if p.price is number else p.price }}
+                                    </td>
+
+                                    <!-- Composite Score -->
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="px-2 py-0.5 rounded-md text-xs font-black {% if p.composite_score >= 0.75 %}bg-emerald-100 text-emerald-800 border border-emerald-200{% elif p.composite_score >= 0.60 %}bg-amber-100 text-amber-800 border border-amber-200{% else %}bg-slate-100 text-slate-700 border border-slate-200{% endif %}">
+                                                {{ p.score_pct or ((p.composite_score * 100)|round(1)|string + '%') }}
+                                            </span>
+                                        </div>
+                                        <div class="w-24 bg-slate-200 h-1.5 rounded-full overflow-hidden mt-1.5 border border-slate-200/50">
+                                            <div class="h-full rounded-full {% if p.composite_score >= 0.75 %}bg-emerald-500{% elif p.composite_score >= 0.60 %}bg-amber-500{% else %}bg-slate-400{% endif %}" style="width: {{ (p.composite_score * 100)|round(1) }}%;"></div>
+                                        </div>
+                                    </td>
+
+                                    <!-- Attribute Breakdown Badges -->
+                                    <td class="px-4 py-3">
+                                        <div class="flex flex-wrap gap-1.5 max-w-md">
+                                            {% if p.attributes %}
+                                                {% if 'Battery Life (hours)' in p.attributes %}
+                                                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] bg-slate-50 border border-slate-200 text-slate-700 shadow-2xs" title="Battery Life">
+                                                    <i class="fa-solid fa-battery-three-quarters text-slate-400 text-[10px]"></i>
+                                                    <span class="font-bold text-slate-900">{{ p.attributes['Battery Life (hours)'].display_value }}h</span>
+                                                    <span class="text-[9px] text-slate-400 font-mono">({{ (p.attributes['Battery Life (hours)'].normalized_value * 100)|round|int }}%)</span>
+                                                </span>
+                                                {% endif %}
+                                                {% if 'Price (INR)' in p.attributes %}
+                                                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] bg-slate-50 border border-slate-200 text-slate-700 shadow-2xs" title="Price Economy (Lower is Better)">
+                                                    <i class="fa-solid fa-tag text-slate-400 text-[10px]"></i>
+                                                    <span class="font-bold text-slate-900">{{ currency }}{{ '{:,.0f}'.format(p.attributes['Price (INR)'].display_value) if p.attributes['Price (INR)'].display_value is number else p.attributes['Price (INR)'].display_value }}</span>
+                                                    <span class="text-[9px] text-slate-400 font-mono">({{ (p.attributes['Price (INR)'].normalized_value * 100)|round|int }}%)</span>
+                                                </span>
+                                                {% endif %}
+                                                {% if 'Rating' in p.attributes %}
+                                                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] bg-slate-50 border border-slate-200 text-slate-700 shadow-2xs" title="User Rating">
+                                                    <i class="fa-solid fa-star text-amber-400 text-[10px]"></i>
+                                                    <span class="font-bold text-slate-900">{{ p.attributes['Rating'].display_value }}</span>
+                                                    <span class="text-[9px] text-slate-400 font-mono">({{ (p.attributes['Rating'].normalized_value * 100)|round|int }}%)</span>
+                                                </span>
+                                                {% endif %}
+                                                {% if 'Active Noise Cancelling' in p.attributes %}
+                                                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] bg-slate-50 border border-slate-200 text-slate-700 shadow-2xs" title="Active Noise Cancelling">
+                                                    <i class="fa-solid fa-waveform-lines text-slate-400 text-[10px]"></i>
+                                                    <span class="font-bold text-slate-900">ANC: {{ p.attributes['Active Noise Cancelling'].display_value }}</span>
+                                                    <span class="text-[9px] text-slate-400 font-mono">({{ (p.attributes['Active Noise Cancelling'].normalized_value * 100)|round|int }}%)</span>
+                                                </span>
+                                                {% endif %}
+                                                {% for aname, adata in p.attributes.items() %}
+                                                    {% if aname not in ['Battery Life (hours)', 'Price (INR)', 'Rating', 'Active Noise Cancelling'] %}
+                                                    <span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] bg-slate-50 border border-slate-200 text-slate-700 shadow-2xs">
+                                                        <span class="text-slate-500 font-medium">{{ aname }}:</span>
+                                                        <span class="font-bold text-slate-900">{{ adata.display_value }}</span>
+                                                        <span class="text-[9px] text-slate-400 font-mono">({{ (adata.normalized_value * 100)|round|int }}%)</span>
+                                                    </span>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% else %}
+                                                <span class="text-slate-400 text-[10px] font-mono">N/A</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+
+                                    <!-- Status Badge -->
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        {% if p.in_stock %}
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> In Stock
+                                        </span>
+                                        {% else %}
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Out of Stock
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <!-- Clear Empty State -->
+                    <div class="p-8 text-center bg-white rounded-2xl border border-slate-200">
+                        <i class="fa-solid fa-box-open text-slate-300 text-3xl mb-2"></i>
+                        <div class="text-xs font-bold text-slate-700">No ranked products available in this category.</div>
+                        <p class="text-[11px] text-slate-400 mt-1">Products must be mapped and seeded in category {{ cat.category_id }}.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Section 3: Live Native Weight Simulator -->
+        <div id="simulator-section" class="mt-4 pt-6 border-t border-slate-200">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-3">
+                <div>
+                    <h4 class="font-extrabold text-slate-900 text-base flex items-center gap-2">
+                        <i class="fa-solid fa-vial text-rose-600"></i> Interactive Weight Simulator (Live Engine Query)
+                    </h4>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        Simulate how shifting weights in real time changes the ranking order directly against the ranking engine microservice.
+                    </p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <!-- Category Selector -->
+                    <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-2xl">
+                        <label for="simCategorySelect" class="text-xs font-bold text-slate-600">Category:</label>
+                        <select id="simCategorySelect" class="text-xs font-bold bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                            {% for cat in categories_data.get('categories', []) %}
+                            <option value="{{ cat.category_id }}">{{ cat.name }} (ID: {{ cat.category_id }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-2xl">
+                        <span class="text-xs text-slate-500 font-bold">Sum:</span>
+                        <span id="simWeightTotal" class="text-xs font-black px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">100%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slider Controls Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-5 rounded-2xl bg-slate-50 border border-slate-200">
+                <div>
+                    <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
+                        <span>Battery Life</span>
+                        <span id="simValBattery" class="text-rose-600 font-black">35%</span>
+                    </div>
+                    <input type="range" id="simBattery" min="0" max="100" step="5" value="35" class="w-full accent-rose-600 cursor-pointer">
+                    <div class="flex justify-between text-[10px] text-slate-400 mt-0.5">
+                        <span>0%</span>
+                        <span>50%</span>
+                        <span>100%</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
+                        <span>Price Economy</span>
+                        <span id="simValPrice" class="text-rose-600 font-black">35%</span>
+                    </div>
+                    <input type="range" id="simPrice" min="0" max="100" step="5" value="35" class="w-full accent-rose-600 cursor-pointer">
+                    <div class="flex justify-between text-[10px] text-slate-400 mt-0.5">
+                        <span>0%</span>
+                        <span>50%</span>
+                        <span>100%</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
+                        <span>Rating</span>
+                        <span id="simValRating" class="text-rose-600 font-black">15%</span>
+                    </div>
+                    <input type="range" id="simRating" min="0" max="100" step="5" value="15" class="w-full accent-rose-600 cursor-pointer">
+                    <div class="flex justify-between text-[10px] text-slate-400 mt-0.5">
+                        <span>0%</span>
+                        <span>50%</span>
+                        <span>100%</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
+                        <span>ANC (Noise Cancelling)</span>
+                        <span id="simValAnc" class="text-rose-600 font-black">15%</span>
+                    </div>
+                    <input type="range" id="simAnc" min="0" max="100" step="5" value="15" class="w-full accent-rose-600 cursor-pointer">
+                    <div class="flex justify-between text-[10px] text-slate-400 mt-0.5">
+                        <span>0%</span>
+                        <span>50%</span>
+                        <span>100%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-4 flex flex-wrap items-center gap-3">
+                <button id="runSimulationBtn" class="px-5 py-2.5 bg-slate-900 hover:bg-rose-600 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-play text-xs"></i> Execute Rank Simulation
+                </button>
+                <button id="resetWeightsBtn" class="px-4 py-2.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 font-bold text-xs rounded-xl transition flex items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-rotate-left text-xs"></i> Reset Defaults (35/35/15/15)
+                </button>
+                <span id="simQueryStatus" class="text-xs text-slate-500 italic ml-2"></span>
+            </div>
+
+            <!-- Simulation Results Output Table: Immediately Visible -->
+            <div id="simResultsContainer" class="mt-5">
+                <div class="flex justify-between items-center mb-2">
+                    <h5 class="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-list-ol text-rose-600"></i> Simulated Ranking Order
+                    </h5>
+                    <span id="simCountBadge" class="text-[11px] font-bold text-slate-500">Loaded from engine</span>
+                </div>
+                <div class="overflow-x-auto bg-white rounded-2xl border border-slate-200 shadow-2xs">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-100/80 text-[10px] uppercase font-bold text-slate-500 border-b border-slate-200">
+                            <tr>
+                                <th class="px-4 py-2.5">Rank</th>
+                                <th class="px-4 py-2.5">Product</th>
+                                <th class="px-4 py-2.5">Price</th>
+                                <th class="px-4 py-2.5">Composite Score</th>
+                                <th class="px-4 py-2.5">Battery</th>
+                                <th class="px-4 py-2.5">ANC</th>
+                                <th class="px-4 py-2.5">Rating</th>
+                            </tr>
+                        </thead>
+                        <tbody id="simResultsBody" class="divide-y divide-slate-100">
+                            <tr>
+                                <td colspan="7" class="px-4 py-6 text-center text-slate-400">
+                                    <i class="fa-solid fa-spinner fa-spin mr-1"></i> Initializing simulation query...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 4: Embedded Iframe View of Weighted Ranking Engine Console -->
+    <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+            <div>
+                <h3 class="font-black text-slate-900 text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-window-maximize text-rose-600"></i> Embedded Weighted Ranking Engine Console (:5000)
+                </h3>
+                <p class="text-xs text-slate-500 mt-0.5">
+                    Direct live view into the Weighted Ranking Engine administration and analytics portal on port 5000.
+                </p>
+            </div>
+
+            <!-- Iframe Target Tabs -->
+            <div class="flex items-center gap-2 bg-slate-100 p-1 rounded-xl">
+                <button onclick="setIframeUrl('{{ engine_url }}/admin/category/{{ categories_data.get('categories', [{}])[0].get('category_id', 4) }}/overview')" class="iframe-tab active px-3 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-900 shadow-sm transition">
+                    Category Overview
+                </button>
+                <button onclick="setIframeUrl('{{ engine_url }}/admin')" class="iframe-tab px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition">
+                    Engine Admin
+                </button>
+                <button onclick="setIframeUrl('{{ engine_url }}/insights')" class="iframe-tab px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition">
+                    Search Insights
+                </button>
+                <a id="externalLink" href="{{ engine_url }}/admin/category/{{ categories_data.get('categories', [{}])[0].get('category_id', 4) }}/overview" target="_blank" class="p-1.5 text-slate-500 hover:text-rose-600 text-xs flex items-center gap-1 font-semibold" title="Open in new window">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    <span class="hidden md:inline">Open External</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="text-[11px] text-slate-500 mb-2 flex items-center gap-1">
+            <span class="font-bold text-slate-700">Current URL:</span>
+            <code id="currentIframeUrlText" class="font-mono bg-slate-100 px-2 py-0.5 rounded text-slate-800">{{ engine_url }}/admin/category/{{ categories_data.get('categories', [{}])[0].get('category_id', 4) }}/overview</code>
+        </div>
+
+        <!-- Embedded Iframe Container -->
+        <div class="w-full h-[650px] rounded-2xl border border-slate-300 overflow-hidden shadow-inner bg-slate-50">
+            <iframe id="engineIframe" src="{{ engine_url }}/admin/category/{{ categories_data.get('categories', [{}])[0].get('category_id', 4) }}/overview" 
+                    class="w-full h-full border-0" 
+                    title="Weighted Ranking Engine Console"></iframe>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Iframe Target Switching
+    function setIframeUrl(url) {
+        const iframe = document.getElementById('engineIframe');
+        const extLink = document.getElementById('externalLink');
+        const urlText = document.getElementById('currentIframeUrlText');
+        if (iframe) iframe.src = url;
+        if (extLink) extLink.href = url;
+        if (urlText) urlText.textContent = url;
+        
+        document.querySelectorAll('.iframe-tab').forEach(tab => {
+            tab.classList.remove('bg-white', 'text-slate-900', 'shadow-sm', 'font-bold');
+            tab.classList.add('text-slate-600', 'font-semibold');
+        });
+        if (event && event.target) {
+            event.target.classList.add('bg-white', 'text-slate-900', 'shadow-sm', 'font-bold');
+            event.target.classList.remove('text-slate-600', 'font-semibold');
+        }
+    }
+
+    // Weight Simulator JS
+    const simB = document.getElementById('simBattery');
+    const simP = document.getElementById('simPrice');
+    const simR = document.getElementById('simRating');
+    const simA = document.getElementById('simAnc');
+    const simCatSelect = document.getElementById('simCategorySelect');
+
+    const simValB = document.getElementById('simValBattery');
+    const simValP = document.getElementById('simValPrice');
+    const simValR = document.getElementById('simValRating');
+    const simValA = document.getElementById('simValAnc');
+    const simTotal = document.getElementById('simWeightTotal');
+    const simStatus = document.getElementById('simQueryStatus');
+    const simCountBadge = document.getElementById('simCountBadge');
+
+    function switchSimulatorCategory(catId) {
+        if (simCatSelect) {
+            simCatSelect.value = catId;
+            runRankSimulation();
+        }
+    }
+
+    function updateSimLabels() {
+        if (simValB) simValB.textContent = simB.value + '%';
+        if (simValP) simValP.textContent = simP.value + '%';
+        if (simValR) simValR.textContent = simR.value + '%';
+        if (simValA) simValA.textContent = simA.value + '%';
+
+        const total = parseInt(simB.value) + parseInt(simP.value) + parseInt(simR.value) + parseInt(simA.value);
+        if (simTotal) {
+            simTotal.textContent = total + '%';
+            if (total === 100) {
+                simTotal.className = 'text-xs font-black px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-200';
+            } else {
+                simTotal.className = 'text-xs font-black px-2 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200';
+            }
+        }
+    }
+
+    let simDebounceTimer = null;
+    function handleSliderInput() {
+        updateSimLabels();
+        clearTimeout(simDebounceTimer);
+        simDebounceTimer = setTimeout(runRankSimulation, 200);
+    }
+
+    [simB, simP, simR, simA].forEach(s => {
+        if (s) s.addEventListener('input', handleSliderInput);
+    });
+
+    if (simCatSelect) {
+        simCatSelect.addEventListener('change', runRankSimulation);
+    }
+
+    // Reset Defaults
+    const resetBtn = document.getElementById('resetWeightsBtn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+            simB.value = 35;
+            simP.value = 35;
+            simR.value = 15;
+            simA.value = 15;
+            updateSimLabels();
+            runRankSimulation();
+        });
+    }
+
+    // Run Simulation
+    async function runRankSimulation() {
+        const catId = simCatSelect ? parseInt(simCatSelect.value) : 4;
+        const weights = {
+            'Battery Life (hours)': parseFloat(simB.value),
+            'Price (INR)': parseFloat(simP.value),
+            'Rating': parseFloat(simR.value),
+            'Active Noise Cancelling': parseFloat(simA.value)
+        };
+
+        const tbody = document.getElementById('simResultsBody');
+        if (simStatus) simStatus.textContent = 'Querying ranking engine...';
+
+        try {
+            const resp = await fetch('{{ url_for("storefront.smart_rank") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    category_id: catId,
+                    custom_weights: weights,
+                    limit: 50
+                })
+            });
+            const data = await resp.json();
+            
+            if (simStatus) simStatus.textContent = `Completed (${data.engine_status || 'online'})`;
+            
+            if (data.results && data.results.length > 0) {
+                if (simCountBadge) simCountBadge.textContent = `${data.results.length} products ranked`;
+                tbody.innerHTML = '';
+                data.results.forEach((item, index) => {
+                    const rank = item.rank || (index + 1);
+                    let rankBadge = '';
+                    if (rank === 1) {
+                        rankBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-black bg-amber-400 text-amber-950 border border-amber-300 shadow-sm"><i class="fa-solid fa-trophy mr-1 text-[11px] text-amber-900"></i>#1</span>';
+                    } else if (rank === 2) {
+                        rankBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-black bg-slate-200 text-slate-800 border border-slate-300 shadow-sm"><i class="fa-solid fa-medal mr-1 text-[11px] text-slate-600"></i>#2</span>';
+                    } else if (rank === 3) {
+                        rankBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-black bg-amber-700 text-white border border-amber-600 shadow-sm"><i class="fa-solid fa-award mr-1 text-[11px] text-amber-200"></i>#3</span>';
+                    } else {
+                        rankBadge = `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">#${rank}</span>`;
+                    }
+
+                    const scoreVal = typeof item.composite_score === 'number' ? item.composite_score : 0;
+                    const scorePct = item.score_pct || (scoreVal * 100).toFixed(1) + '%';
+                    const scoreBarColor = scoreVal >= 0.75 ? 'bg-emerald-500' : (scoreVal >= 0.60 ? 'bg-amber-500' : 'bg-slate-400');
+                    const scoreBadgeClass = scoreVal >= 0.75 ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : (scoreVal >= 0.60 ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-slate-100 text-slate-700 border border-slate-200');
+
+                    const batteryVal = item.attributes?.['Battery Life (hours)']?.display_value ?? '-';
+                    const priceVal = item.price ? `{{ currency }}${Number(item.price).toLocaleString('en-IN')}` : (item.attributes?.['Price (INR)']?.display_value ? `{{ currency }}${item.attributes?.['Price (INR)']?.display_value}` : '-');
+                    const ancVal = item.attributes?.['Active Noise Cancelling']?.display_value ?? '-';
+                    const ratingVal = item.attributes?.['Rating']?.display_value ?? '-';
+                    const imgUrl = item.image_url || 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600';
+
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-slate-50/80 transition';
+                    tr.innerHTML = `
+                        <td class="px-4 py-3">${rankBadge}</td>
+                        <td class="px-4 py-3">
+                            <div class="flex items-center gap-3">
+                                <img src="${imgUrl}" alt="${item.name}" class="w-9 h-9 object-cover rounded-xl bg-slate-100 border border-slate-200 flex-shrink-0" onerror="this.src='https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600'">
+                                <div>
+                                    <div class="font-extrabold text-slate-900 text-xs">${item.name}</div>
+                                    <div class="text-[10px] text-slate-400">${item.category_name || ''}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 font-black text-slate-900 text-xs">${priceVal}</td>
+                        <td class="px-4 py-3 whitespace-nowrap">
+                            <span class="px-2 py-0.5 rounded-md text-xs font-black ${scoreBadgeClass}">${scorePct}</span>
+                            <div class="w-20 bg-slate-200 h-1.5 rounded-full overflow-hidden mt-1.5">
+                                <div class="${scoreBarColor} h-full rounded-full" style="width: ${Math.min(100, Math.round(scoreVal * 100))}%;"></div>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 font-semibold text-slate-700 text-xs">${batteryVal !== '-' ? batteryVal + 'h' : '-'}</td>
+                        <td class="px-4 py-3">
+                            ${ancVal === 'YES' || ancVal === 1 ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">YES</span>' : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500">NO</span>'}
+                        </td>
+                        <td class="px-4 py-3 font-bold text-amber-500 text-xs"><i class="fa-solid fa-star text-[10px]"></i> ${ratingVal}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-6 text-center text-slate-400">No products returned for the selected category.</td></tr>';
+                if (simCountBadge) simCountBadge.textContent = '0 products';
+            }
+        } catch (err) {
+            tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-6 text-center text-rose-500">Simulation query error: ${err.message}</td></tr>`;
+            if (simStatus) simStatus.textContent = 'Error';
+        }
+    }
+
+    const runBtn = document.getElementById('runSimulationBtn');
+    if (runBtn) runBtn.addEventListener('click', runRankSimulation);
+
+    // Initial load simulation results on page ready
+    document.addEventListener('DOMContentLoaded', () => {
+        updateSimLabels();
+        runRankSimulation();
+    });
+</script>
+{% endblock %}

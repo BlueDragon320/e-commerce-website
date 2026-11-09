@@ -1,0 +1,174 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Manage Products — Noise Admin{% endblock %}
+{% block header_title %}Product Catalog Inventory{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h3 class="text-xl font-black text-slate-900">Noise Catalog ({{ products|length }} Products)</h3>
+            <p class="text-xs text-slate-500">Configure device attributes, stock flags, and technical parameters.</p>
+        </div>
+        <a href="{{ url_for('admin.new_product') }}" class="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-2">
+            <i class="fa-solid fa-plus text-xs"></i> Add New Product
+        </a>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap gap-4 items-center justify-between">
+        <form method="GET" action="{{ url_for('admin.products') }}" class="flex flex-wrap gap-3 items-center">
+            <input type="text" name="q" value="{{ q }}" placeholder="Search by name..." 
+                   class="text-xs p-2 rounded-lg border border-slate-200 w-56 focus:outline-none focus:ring-2 focus:ring-rose-500">
+            
+            <select name="category" class="text-xs p-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit" class="px-3 py-2 bg-slate-900 text-white font-bold text-xs rounded-lg">Filter</button>
+            {% if q or selected_category %}
+            <a href="{{ url_for('admin.products') }}" class="text-xs text-slate-500 hover:text-rose-600">Reset</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Products Table -->
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-700">
+                <thead class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase border-b border-slate-100">
+                    <tr>
+                        <th class="px-5 py-3">ID</th>
+                        <th class="px-5 py-3">Engine Rank</th>
+                        <th class="px-5 py-3">Sponsored</th>
+                        <th class="px-5 py-3">Product</th>
+                        <th class="px-5 py-3">Category</th>
+                        <th class="px-5 py-3">Composite Score</th>
+                        <th class="px-5 py-3">Price</th>
+                        <th class="px-5 py-3">Battery</th>
+                        <th class="px-5 py-3">ANC</th>
+                        <th class="px-5 py-3">Rating</th>
+                        <th class="px-5 py-3">Stock</th>
+                        <th class="px-5 py-3 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for prod in products %}
+                    <tr class="hover:bg-slate-50/80 transition">
+                        <td class="px-5 py-3.5 font-bold text-slate-400">#{{ prod.id }}</td>
+
+                        <!-- Engine Rank Badge -->
+                        <td class="px-5 py-3.5 whitespace-nowrap">
+                            {% if prod.engine_rank == 1 %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-black bg-amber-400 text-amber-950 border border-amber-300 shadow-sm">
+                                <i class="fa-solid fa-trophy mr-1 text-[10px] text-amber-900"></i>#1
+                            </span>
+                            {% elif prod.engine_rank == 2 %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-black bg-slate-200 text-slate-800 border border-slate-300 shadow-sm">
+                                <i class="fa-solid fa-medal mr-1 text-[10px] text-slate-600"></i>#2
+                            </span>
+                            {% elif prod.engine_rank == 3 %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-black bg-amber-700 text-white border border-amber-600 shadow-sm">
+                                <i class="fa-solid fa-award mr-1 text-[10px] text-amber-200"></i>#3
+                            </span>
+                            {% elif prod.engine_rank %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                                #{{ prod.engine_rank }}
+                            </span>
+                            {% else %}
+                            <span class="text-slate-400 text-xs font-mono">—</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Sponsored Status & Quick Toggle -->
+                        <td class="px-5 py-3.5 whitespace-nowrap">
+                            <form action="{{ url_for('admin.toggle_sponsored', product_id=prod.id) }}" method="POST">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                {% if prod.is_sponsored %}
+                                <button type="submit" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-black bg-amber-400 text-amber-950 border border-amber-300 shadow-xs hover:bg-amber-300 transition cursor-pointer" title="Click to disable sponsorship">
+                                    <i class="fa-solid fa-star text-[10px] text-amber-900"></i> SPONSORED (#1)
+                                </button>
+                                {% else %}
+                                <button type="submit" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 border border-slate-200 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-300 transition cursor-pointer" title="Click to sponsor and pin to #1">
+                                    <i class="fa-regular fa-star text-[10px]"></i> Standard
+                                </button>
+                                {% endif %}
+                            </form>
+                        </td>
+
+                        <!-- Product Thumbnail & Name -->
+                        <td class="px-5 py-3.5">
+                            <div class="flex items-center gap-3">
+                                <img src="{{ prod.image_url }}" alt="{{ prod.name }}" class="w-10 h-10 object-cover rounded-lg bg-slate-100 flex-shrink-0" onerror="this.src='https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600'">
+                                <div>
+                                    <div class="font-bold text-slate-900">{{ prod.name }}</div>
+                                    <div class="text-[10px] text-slate-400">{{ prod.slug }}</div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td class="px-5 py-3.5 font-medium text-slate-700">{{ prod.category }}</td>
+
+                        <!-- Composite Score -->
+                        <td class="px-5 py-3.5 whitespace-nowrap">
+                            {% if prod.composite_score is not none %}
+                            <div class="flex items-center gap-1.5">
+                                <span class="px-2 py-0.5 rounded-md text-xs font-black {% if prod.composite_score >= 0.75 %}bg-emerald-100 text-emerald-800 border border-emerald-200{% elif prod.composite_score >= 0.60 %}bg-amber-100 text-amber-800 border border-amber-200{% else %}bg-slate-100 text-slate-700 border border-slate-200{% endif %}">
+                                    {{ prod.score_pct or ((prod.composite_score * 100)|round(1)|string + '%') }}
+                                </span>
+                            </div>
+                            <div class="w-16 bg-slate-200 h-1.5 rounded-full overflow-hidden mt-1.5 border border-slate-200/50">
+                                <div class="h-full rounded-full {% if prod.composite_score >= 0.75 %}bg-emerald-500{% elif prod.composite_score >= 0.60 %}bg-amber-500{% else %}bg-slate-400{% endif %}" style="width: {{ (prod.composite_score * 100)|round(1) }}%;"></div>
+                            </div>
+                            {% else %}
+                            <span class="text-slate-400 text-xs font-mono">—</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="px-5 py-3.5 font-extrabold text-slate-900">{{ currency }}{{ '{:,.0f}'.format(prod.price) }}</td>
+                        <td class="px-5 py-3.5 font-semibold text-slate-700">{{ prod.battery_life }}h</td>
+                        <td class="px-5 py-3.5">
+                            {% if prod.anc %}
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">YES</span>
+                            {% else %}
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500">NO</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-5 py-3.5">
+                            <span class="font-bold text-amber-500"><i class="fa-solid fa-star text-[10px]"></i> {{ prod.rating }}</span>
+                        </td>
+                        <td class="px-5 py-3.5">
+                            {% if prod.in_stock %}
+                            <span class="text-emerald-600 font-semibold flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> In Stock
+                            </span>
+                            {% else %}
+                            <span class="text-rose-600 font-semibold flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Out of Stock
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-5 py-3.5 text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <a href="{{ url_for('admin.edit_product', product_id=prod.id) }}" class="p-1.5 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg transition" title="Edit">
+                                    <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                </a>
+                                <form action="{{ url_for('admin.delete_product', product_id=prod.id) }}" method="POST" onsubmit="return confirm('Delete this product?');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                    <button type="submit" class="p-1.5 text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-lg transition" title="Delete">
+                                        <i class="fa-solid fa-trash-can text-xs"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

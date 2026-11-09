@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Store Admin — Noise E-Commerce{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 flex h-screen overflow-hidden">
+    <!-- Admin Sidebar -->
+    <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col flex-shrink-0 border-r border-slate-800">
+        <!-- Logo -->
+        <div class="h-16 flex items-center justify-between px-6 border-b border-slate-800">
+            <a href="{{ url_for('admin.dashboard') }}" class="flex items-center gap-2">
+                <span class="text-xl font-black tracking-tight text-white">noise<span class="text-rose-500">.</span>admin</span>
+            </a>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
+            <a href="{{ url_for('admin.dashboard') }}" 
+               class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold {% if request.endpoint == 'admin.dashboard' %}bg-rose-600 text-white shadow{% else %}text-slate-400 hover:bg-slate-800 hover:text-white{% endif %} transition">
+                <i class="fa-solid fa-chart-line text-sm w-5 text-center"></i>
+                <span>Store Dashboard</span>
+            </a>
+
+            <a href="{{ url_for('admin.products') }}" 
+               class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold {% if request.endpoint in ['admin.products', 'admin.new_product', 'admin.edit_product'] %}bg-rose-600 text-white shadow{% else %}text-slate-400 hover:bg-slate-800 hover:text-white{% endif %} transition">
+                <i class="fa-solid fa-boxes-stacked text-sm w-5 text-center"></i>
+                <span>Product Catalog</span>
+            </a>
+
+            <!-- Dedicated Search Engine Admin Panel Link -->
+            <a href="{{ url_for('admin.ranking_engine') }}" 
+               class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold {% if request.endpoint == 'admin.ranking_engine' %}bg-gradient-to-r from-rose-600 to-amber-600 text-white shadow{% else %}text-rose-400 hover:bg-slate-800 hover:text-rose-300{% endif %} transition">
+                <i class="fa-solid fa-microchip text-sm w-5 text-center"></i>
+                <span>Search Engine Admin</span>
+            </a>
+
+            <div class="pt-6 pb-2 text-[10px] font-bold text-slate-500 uppercase px-3 tracking-wider">
+                Storefront
+            </div>
+
+            <a href="{{ url_for('storefront.index') }}" target="_blank"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-white transition">
+                <i class="fa-solid fa-store text-sm w-5 text-center"></i>
+                <span>Visit Storefront</span>
+                <i class="fa-solid fa-arrow-up-right-from-square text-[10px] ml-auto"></i>
+            </a>
+
+            <a href="{{ url_for('storefront.shop') }}" target="_blank"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-white transition">
+                <i class="fa-solid fa-sliders text-sm w-5 text-center"></i>
+                <span>Shop Catalog</span>
+                <i class="fa-solid fa-arrow-up-right-from-square text-[10px] ml-auto"></i>
+            </a>
+
+            <div class="pt-6 pb-2 text-[10px] font-bold text-slate-500 uppercase px-3 tracking-wider">
+                Session
+            </div>
+
+            <a href="{{ url_for('admin.logout') }}"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:bg-rose-950/40 hover:text-rose-400 transition">
+                <i class="fa-solid fa-right-from-bracket text-sm w-5 text-center"></i>
+                <span>Logout</span>
+            </a>
+        </nav>
+
+        <!-- Engine Microservice Status Badge -->
+        <div class="p-4 border-t border-slate-800 bg-slate-950/50">
+            <div class="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-2">Engine Microservice</div>
+            <div class="flex items-center justify-between text-xs">
+                <span class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span class="text-slate-300 font-mono text-[11px]">:5000 / Company 1</span>
+                </span>
+                <a href="{{ url_for('admin.api_engine_status') }}" target="_blank" class="text-rose-400 hover:text-rose-300 text-[10px]">API</a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col h-screen overflow-hidden">
+        <!-- Top Bar -->
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 flex-shrink-0">
+            <div class="flex items-center gap-4">
+                <h2 class="text-lg font-bold text-slate-900">{% block header_title %}Admin Control Panel{% endblock %}</h2>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="{{ url_for('admin.ranking_engine') }}" class="px-3.5 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-bold rounded-lg border border-rose-200 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-sliders"></i> Ranking Engine Console
+                </a>
+                <a href="{{ url_for('admin.logout') }}" class="px-3 py-1.5 text-slate-600 hover:text-rose-600 hover:bg-slate-100 text-xs font-semibold rounded-lg transition flex items-center gap-1.5"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+            </div>
+        </header>
+
+        <!-- Flash Messages -->
+        <div class="px-8 mt-4">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="p-3.5 mb-2 rounded-xl text-xs flex items-center justify-between
+                            {% if category == 'success' %} bg-emerald-50 text-emerald-800 border border-emerald-200
+                            {% elif category == 'info' %} bg-sky-50 text-sky-800 border border-sky-200
+                            {% else %} bg-rose-50 text-rose-800 border border-rose-200 {% endif %}">
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- Scrollable Page Content -->
+        <main class="flex-1 overflow-y-auto p-8">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
