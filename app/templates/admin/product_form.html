@@ -1,0 +1,131 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}{% if product %}Edit {{ product.name }}{% else %}New Product{% endif %} — Noise Admin{% endblock %}
+{% block header_title %}{% if product %}Edit Product #{{ product.id }}{% else %}Add Product to Catalog{% endif %}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
+    <form method="POST" class="space-y-6">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="md:col-span-2">
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Product Title</label>
+                <input type="text" name="name" required value="{{ product.name if product else '' }}" 
+                       class="w-full text-xs p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-rose-500">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Category</label>
+                <select name="category" id="category-select" required class="w-full text-xs p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                    {% for cat in categories %}
+                    <option value="{{ cat }}" {% if product and product.category == cat %}selected{% endif %}>{{ cat }}</option>
+                    {% endfor %}
+                    <option value="__new__">+ Add New Category...</option>
+                </select>
+                <input type="text" name="custom_category" id="custom-category-input" placeholder="Enter new category name" class="hidden w-full text-xs p-3 mt-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-rose-500">
+            </div>
+
+            <div>
+                <div class="flex items-center justify-between mb-1">
+                    <label class="block text-xs font-bold text-slate-700 uppercase">Price (INR)</label>
+                    <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                        <i class="fa-solid fa-bolt text-emerald-500"></i> Core Default &bull; Engine Synced
+                    </span>
+                </div>
+                <input type="number" step="0.01" name="price" required value="{{ product.price if product else 1999.0 }}" 
+                       class="w-full text-xs p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                <p class="text-[11px] text-slate-400 mt-1">Permanent default attribute synced automatically with the weighted ranking engine.</p>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Original Price (M.R.P)</label>
+                <input type="number" step="0.01" name="original_price" value="{{ product.original_price if product else 4999.0 }}" 
+                       class="w-full text-xs p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-rose-500">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Battery Life (Hours)</label>
+                <input type="number" step="0.1" name="battery_life" required value="{{ product.battery_life if product else 40.0 }}" 
+                       class="w-full text-xs p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-rose-500">
+            </div>
+
+            <div>
+                <div class="flex items-center justify-between mb-1">
+                    <label class="block text-xs font-bold text-slate-700 uppercase">Customer Rating (0 - 100 or 0 - 5.0)</label>
+                    <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                        <i class="fa-solid fa-bolt text-emerald-500"></i> Core Default &bull; Engine Synced
+                    </span>
+                </div>
+                <input type="number" step="0.1" min="0" max="100" name="rating" required value="{{ product.rating if product else 4.2 }}" class="w-full text-xs p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                <p class="text-[11px] text-slate-400 mt-1">Accepts 0 - 5.0 stars or 0 - 100 score. Permanent default attribute synced with the ranking engine.</p>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Review Count</label>
+                <input type="number" name="review_count" required value="{{ product.review_count if product else 150 }}" 
+                       class="w-full text-xs p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-rose-500">
+            </div>
+
+            <div class="md:col-span-2">
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Image URL</label>
+                <input type="url" name="image_url" required value="{{ product.image_url if product else 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600' }}" 
+                       class="w-full text-xs p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-rose-500">
+            </div>
+
+            <div class="md:col-span-2">
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Description</label>
+                <textarea name="description" rows="3" class="w-full text-xs p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-rose-500">{{ product.description if product else '' }}</textarea>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-6 md:col-span-2 pt-2">
+                <label class="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+                    <input type="checkbox" name="anc" {% if product and product.anc %}checked{% endif %} class="w-4 h-4 text-rose-600 rounded">
+                    <span>Active Noise Cancellation (ANC)</span>
+                </label>
+
+                <label class="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+                    <input type="checkbox" name="in_stock" {% if not product or product.in_stock %}checked{% endif %} class="w-4 h-4 text-rose-600 rounded">
+                    <span>In Stock</span>
+                </label>
+
+                <label class="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+                    <input type="checkbox" name="is_featured" {% if product and product.is_featured %}checked{% endif %} class="w-4 h-4 text-rose-600 rounded">
+                    <span>Featured on Homepage</span>
+                </label>
+
+                <label class="flex items-center gap-2 text-xs font-black text-amber-900 cursor-pointer bg-amber-50 px-3.5 py-2 rounded-xl border border-amber-300 shadow-2xs hover:bg-amber-100 transition">
+                    <input type="checkbox" name="is_sponsored" {% if product and product.is_sponsored %}checked{% endif %} class="w-4 h-4 text-amber-600 rounded accent-amber-500">
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-trophy text-amber-500"></i> Sponsored Product (Guaranteed #1 on Top)</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="pt-6 border-t border-slate-100 flex gap-4">
+            <button type="submit" class="px-6 py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow transition">
+                {% if product %}Save Changes{% else %}Create Product{% endif %}
+            </button>
+            <a href="{{ url_for('admin.products') }}" class="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const select = document.getElementById('category-select');
+    const customInput = document.getElementById('custom-category-input');
+    if (select && customInput) {
+        select.addEventListener('change', function() {
+            if (this.value === '__new__') {
+                customInput.classList.remove('hidden');
+                customInput.setAttribute('required', 'required');
+                customInput.focus();
+            } else {
+                customInput.classList.add('hidden');
+                customInput.removeAttribute('required');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
