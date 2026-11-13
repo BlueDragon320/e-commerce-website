@@ -106,6 +106,9 @@ class Order(db.Model):
     customer_name = db.Column(db.String(100), nullable=False)
     customer_email = db.Column(db.String(120), nullable=False)
     address = db.Column(db.Text, nullable=False)
+    subtotal = db.Column(db.Float, default=0.0)
+    shipping_fee = db.Column(db.Float, default=0.0)
+    gst_amount = db.Column(db.Float, default=0.0)
     total_amount = db.Column(db.Float, nullable=False)
     status = db.Column(db.String(50), default='completed', nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
@@ -119,6 +122,9 @@ class Order(db.Model):
             'customer_name': self.customer_name,
             'customer_email': self.customer_email,
             'address': self.address,
+            'subtotal': self.subtotal,
+            'shipping_fee': self.shipping_fee,
+            'gst_amount': self.gst_amount,
             'total_amount': self.total_amount,
             'status': self.status,
             'created_at': self.created_at.isoformat() if self.created_at else None,

@@ -1,4 +1,5 @@
 from unittest.mock import patch, MagicMock
+import pytest
 import requests
 from app.engine_client import RankingEngineClient
 
@@ -132,6 +133,14 @@ def test_product_breakdown_fallback(app):
 # Live Integration Tests with Weighted Ranking Engine on Port 5000
 # -----------------------------------------------------------------------------
 
+def _engine_online():
+    try:
+        r = requests.get('http://localhost:5000/api/v1/health', timeout=0.5)
+        return r.status_code == 200
+    except Exception:
+        return False
+
+@pytest.mark.skipif(not _engine_online(), reason="Live ranking engine not running on localhost:5000")
 def test_live_engine_health_and_company(app):
     """Verify live integration with port 5000: health check and company name."""
     with app.app_context():
@@ -142,6 +151,7 @@ def test_live_engine_health_and_company(app):
         assert health['company_name'] == 'Noise Official'
         assert health['latency_ms'] is not None
 
+@pytest.mark.skipif(not _engine_online(), reason="Live ranking engine not running on localhost:5000")
 def test_live_engine_categories_noise(app):
     """Verify live categories on port 5000 match official Noise categories."""
     with app.app_context():
@@ -155,6 +165,7 @@ def test_live_engine_categories_noise(app):
         for expected in expected_cats:
             assert expected in cat_names, f"Expected category '{expected}' in {cat_names}"
 
+@pytest.mark.skipif(not _engine_online(), reason="Live ranking engine not running on localhost:5000")
 def test_live_engine_search_noise_products(app):
     """Verify live search on port 5000 returns Noise products with ranks and composite scores."""
     with app.app_context():
@@ -179,6 +190,7 @@ def test_live_engine_search_noise_products(app):
             assert item['composite_score'] > 0
             assert 'attributes' in item
 
+@pytest.mark.skipif(not _engine_online(), reason="Live ranking engine not running on localhost:5000")
 def test_live_engine_category_filtering(app):
     """Verify live category-specific search returns matching Noise category products."""
     with app.app_context():

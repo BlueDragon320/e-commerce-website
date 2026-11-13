@@ -959,7 +959,7 @@ class RankingEngineClient:
                 informative = [t for t in raw_tokens if t != 'noise']
 
             from sqlalchemy import or_
-            if informative:
+            if informative and not is_exact:
                 # User searched a specific model/feature, e.g. "vs102", "combat", "halo", "anc"
                 search_terms = set(informative)
                 for t in informative:
