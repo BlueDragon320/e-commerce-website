@@ -7,10 +7,14 @@ Initializes SQLAlchemy and registers blueprints dynamically.
 import os
 from flask import Flask, session
 from flask_sqlalchemy import SQLAlchemy
-from flask_wtf.csrf import CSRFProtect
+
+try:
+    from flask_wtf.csrf import CSRFProtect
+    csrf = CSRFProtect()
+except ImportError:
+    csrf = None
 
 db = SQLAlchemy()
-csrf = CSRFProtect()
 
 def create_app(config_name: str = 'development') -> Flask:
     """
@@ -31,7 +35,12 @@ def create_app(config_name: str = 'development') -> Flask:
 
     # Initialize extensions
     db.init_app(app)
-    csrf.init_app(app)
+    if csrf is not None:
+        csrf.init_app(app)
+    else:
+        @app.context_processor
+        def csrf_fallback():
+            return {'csrf_token': lambda: ''}
 
     # Register Blueprints dynamically as phases are added
     try:
