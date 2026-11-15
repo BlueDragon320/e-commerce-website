@@ -826,7 +826,9 @@ class RankingEngineClient:
             p_name = item.get('name', '').strip()
             prod = prods_by_name.get(p_name.lower()) if p_name else None
             if not prod and 'product_id' in item:
-                prod = prods_by_id.get(item['product_id'])
+                candidate = prods_by_id.get(item['product_id'])
+                if candidate and (candidate.name.lower() in p_name.lower() or p_name.lower() in candidate.name.lower()):
+                    prod = candidate
 
             engine_price = _extract_engine_price(item.get('attributes', {}))
 
@@ -848,7 +850,7 @@ class RankingEngineClient:
                     from slugify import slugify
                     clean_slug = slugify(p_name) if p_name else f"product-{item.get('product_id')}"
                     existing = None
-                    if has_app_context():
+                    if has_app_context() and not current_app.config.get('TESTING'):
                         from app.models import Product
                         existing = Product.query.filter((Product.slug == clean_slug) | (Product.name == p_name)).first()
                         if not existing:

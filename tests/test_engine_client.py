@@ -145,7 +145,8 @@ def test_enrich_with_local_products_image_sync_existing(app):
             'image_url': new_engine_img,
             'attributes': {'Price': 1999.0}
         }]
-        client._enrich_with_local_products(results)
+        with patch.dict(app.config, {'TESTING': False}):
+            client._enrich_with_local_products(results)
 
         assert results[0]['image_url'] == new_engine_img
         updated_prod = db.session.get(Product, 1)
@@ -176,7 +177,8 @@ def test_enrich_with_local_products_auto_create_missing(app):
             'image_url': engine_img,
             'attributes': {'Price': 3499.0, 'Rating': 4.5}
         }]
-        client._enrich_with_local_products(results)
+        with patch.dict(app.config, {'TESTING': False}):
+            client._enrich_with_local_products(results)
 
         assert results[0]['image_url'] == engine_img
         new_prod = db.session.get(Product, test_id)
