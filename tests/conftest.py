@@ -68,19 +68,19 @@ def app():
         )
 
         p4 = Product(
-            name="Noise Two Wireless Headphones Test",
-            slug="noise-two-wireless-headphones-test",
+            name="Noise Two Wireless Headphones",
+            slug="noise-two-wireless-headphones",
             category="Headphones",
-            price=1999.0,
+            price=1799.0,
             original_price=4999.0,
             battery_life=50.0,
             anc=False,
-            rating=4.3,
-            review_count=95,
+            rating=4.2,
+            review_count=690,
             image_url="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600",
             description="Test on-ear headphones.",
             in_stock=True,
-            is_featured=True
+            is_featured=False
         )
 
         p5 = Product(
@@ -99,7 +99,41 @@ def app():
             is_featured=False
         )
 
-        db.session.add_all([p1, p2, p3, p4, p5])
+        p6 = Product(
+            name="Noise Air Wave Max 5",
+            slug="noise-air-wave-max-5",
+            category="Headphones",
+            price=3499.0,
+            original_price=4999.0,
+            battery_life=80.0,
+            anc=True,
+            rating=4.7,
+            review_count=158,
+            image_url="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600",
+            description="Test ANC headphones.",
+            in_stock=True,
+            is_featured=False,
+            is_sponsored=True
+        )
+
+        p7 = Product(
+            name="Noise Air Wave Max 6",
+            slug="noise-air-wave-max-6",
+            category="Headphones",
+            price=4999.0,
+            original_price=6999.0,
+            battery_life=120.0,
+            anc=True,
+            rating=4.9,
+            review_count=15,
+            image_url="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600",
+            description="Test LDAC headphones.",
+            in_stock=True,
+            is_featured=True,
+            is_sponsored=False
+        )
+
+        db.session.add_all([p1, p2, p3, p4, p5, p6, p7])
         db.session.commit()
 
         yield app

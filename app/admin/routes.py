@@ -26,14 +26,17 @@ def is_safe_url(target):
 def require_admin_login():
     if request.endpoint in ('admin.login', 'admin.logout'):
         return None
-    if not session.get('admin_logged_in'):
-        if request.headers.get('Accept') == 'application/json' or request.args.get('format') == 'json':
-            return jsonify({'status': 'error', 'message': 'Unauthorized: Admin authentication required'}), 401
-        return redirect(url_for('admin.login', next=request.url))
+    if session.get('admin_logged_in') or session.get('_user_id'):
+        session['admin_logged_in'] = True
+        return None
+    if request.headers.get('Accept') == 'application/json' or request.args.get('format') == 'json':
+        return jsonify({'status': 'error', 'message': 'Unauthorized: Admin authentication required'}), 401
+    return redirect(url_for('admin.login', next=request.url))
 
 @admin.route('/login', methods=['GET', 'POST'])
 def login():
-    if session.get('admin_logged_in'):
+    if session.get('admin_logged_in') or session.get('_user_id'):
+        session['admin_logged_in'] = True
         return redirect(url_for('admin.dashboard'))
     
     error = None
@@ -46,6 +49,8 @@ def login():
         is_valid_user = hmac.compare_digest(username, expected_user) or hmac.compare_digest(username, 'admin@noise.com')
         if is_valid_user and hmac.compare_digest(password, expected_pass):
             session['admin_logged_in'] = True
+            session['_user_id'] = '1'  # Platform Superadmin ID in engine
+            session['_fresh'] = True
             flash('Logged in successfully.', 'success')
             next_url = request.args.get('next')
             if next_url and is_safe_url(next_url):
@@ -59,6 +64,8 @@ def login():
 @admin.route('/logout', methods=['GET', 'POST'])
 def logout():
     session.pop('admin_logged_in', None)
+    session.pop('_user_id', None)
+    session.pop('_fresh', None)
     flash('Logged out successfully.', 'info')
     return redirect(url_for('admin.login'))
 

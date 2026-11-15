@@ -4,7 +4,7 @@ import random
 from flask import render_template, request, redirect, url_for, session, jsonify, flash, current_app
 from app import db
 from app.models import Product, CartItem, Order, OrderItem
-from app.engine_client import engine_client
+from app.engine_client import engine_client, CATEGORY_SYNONYMS
 from . import storefront
 
 def get_session_id():
@@ -81,11 +81,21 @@ def shop():
     engine_categories_data = engine_client.get_categories().get('categories', [])
     category_name_to_id = {c['name']: c['category_id'] for c in engine_categories_data if 'name' in c and 'category_id' in c}
     cat_id = category_name_to_id.get(category)
+    if not cat_id and category:
+        cat_lower = category.lower().strip()
+        for cid, cinfo in CATEGORY_SYNONYMS.items():
+            if cinfo.get('name', '').lower() == cat_lower:
+                cat_id = cid
+                break
+            if cat_lower in cinfo.get('synonyms', set()):
+                cat_id = cid
+                break
 
     # Execute search via engine_client
     search_res = engine_client.search(
         query=q,
         category_id=cat_id,
+        category_name=category,
         custom_weights=custom_weights,
         limit=50
     )
@@ -95,7 +105,48 @@ def shop():
 
     # If a specific category was requested by user, filter precisely
     if category:
-        products = [p for p in products if p.get('category_name') == category or p.get('category') == category]
+        products = [
+            p for p in products
+            if (p.get('category_name') and p.get('category_name').lower() == category.lower())
+            or (p.get('category') and p.get('category').lower() == category.lower())
+        ]
+        # If engine search returns 0 products for that category or if products is empty after filtering by category,
+        # fallback to local search for that category
+        if not products:
+            fallback_res = engine_client._fallback_local_search(
+                query=q,
+                category_id=cat_id,
+                category_name=category,
+                custom_weights=custom_weights,
+                limit=50
+            )
+            products = fallback_res.get('results', [])
+            if not products:
+                local_prods = Product.query.filter(Product.category.ilike(f"%{category}%")).all()
+                products = []
+                for p in local_prods:
+                    products.append({
+                        'product_id': p.id,
+                        'local_product_id': p.id,
+                        'name': p.name,
+                        'slug': p.slug,
+                        'category_name': p.category,
+                        'category': p.category,
+                        'price': p.price,
+                        'original_price': p.original_price,
+                        'discount_pct': p.discount_pct,
+                        'image_url': p.image_url,
+                        'description': p.description,
+                        'in_stock': p.in_stock,
+                        'rating': p.rating,
+                        'review_count': p.review_count,
+                        'battery_life': p.battery_life,
+                        'anc': p.anc,
+                        'composite_score': 0.0,
+                        'score_pct': '0.00%',
+                        'is_sponsored': bool(getattr(p, 'is_sponsored', False)),
+                        'attributes': {}
+                    })
 
     # Sorting options:
     # 1. 'relevant' (default): engine weighted composite score

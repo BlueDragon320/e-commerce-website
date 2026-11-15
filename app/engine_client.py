@@ -572,16 +572,36 @@ class RankingEngineClient:
         # Fallback to local DB product breakdown
         return self._fallback_product_breakdown(product_id)
 
-    def search(self, query='', category_id=None, custom_weights=None, limit=20, offset=0, include_sponsors=True):
+    def search(self, query='', category_id=None, custom_weights=None, limit=20, offset=0, include_sponsors=True, category_name=None, **kwargs):
         """
         External search and ranking query.
         Calls GET/POST /api/v1/search with company_id, query, custom_weights.
         If connection fails or returns error, fallbacks gracefully to local database search
         and flags engine_status='offline'.
         """
+        # Fallback resolution of category_id from category_name if not directly provided
+        if category_id is None and category_name:
+            detected_id, _, _, _ = detect_category_intent(category_name)
+            category_id = detected_id
+            if not category_id:
+                cat_map = self.get_category_map()
+                for k, v in cat_map.items():
+                    if isinstance(k, str) and k.lower() == category_name.lower().strip():
+                        category_id = v
+                        break
+            if not category_id:
+                cat_lower = category_name.lower().strip()
+                for cid, cinfo in CATEGORY_SYNONYMS.items():
+                    if cinfo.get('name', '').lower() == cat_lower or cat_lower in cinfo.get('synonyms', set()):
+                        category_id = cid
+                        break
+
         # Intelligent category detection for queries like "ear phones", "ear pods", "watches", "Combat earbuds"
         detected_cat_id, detected_cat_name, remaining, is_exact_synonym = detect_category_intent(query)
         effective_category_id = category_id or detected_cat_id
+        effective_category_name = category_name or detected_cat_name
+        if not effective_category_name and effective_category_id and effective_category_id in CATEGORY_SYNONYMS:
+            effective_category_name = CATEGORY_SYNONYMS[effective_category_id].get('name')
 
         url = f"{self.base_url}/api/v1/search"
 
@@ -600,8 +620,18 @@ class RankingEngineClient:
                 if resp.status_code == 200:
                     data = resp.json()
                     if data.get('status') == 'success':
+                        results = data.get('results', [])
+                        if len(results) == 0 and (category_name or effective_category_id):
+                            return self._fallback_local_search(
+                                query=query,
+                                category_id=effective_category_id,
+                                custom_weights=custom_weights,
+                                limit=limit,
+                                offset=offset,
+                                category_name=effective_category_name
+                            )
                         data['engine_status'] = 'online'
-                        self._enrich_with_local_products(data.get('results', []))
+                        self._enrich_with_local_products(results)
                         return data
             else:
                 # 1. If exact category synonym (e.g. 'ear phones', 'ear pods', 'earbuds', 'smartwatch'):
@@ -706,6 +736,17 @@ class RankingEngineClient:
                                     self._enrich_with_local_products(data3.get('results', []))
                                     return data3
 
+                        # If engine search returned 0 products for requested category, fallback to local search
+                        if len(results) == 0 and (category_name or effective_category_id):
+                            return self._fallback_local_search(
+                                query=query,
+                                category_id=effective_category_id,
+                                custom_weights=custom_weights,
+                                limit=limit,
+                                offset=offset,
+                                category_name=effective_category_name
+                            )
+
                         data['engine_status'] = 'online'
                         self._enrich_with_local_products(results)
                         return data
@@ -713,7 +754,14 @@ class RankingEngineClient:
             logger.warning(f"Ranking engine search error: {e}")
 
         # Graceful fallback to local DB search
-        return self._fallback_local_search(query, effective_category_id, custom_weights, limit, offset)
+        return self._fallback_local_search(
+            query=query,
+            category_id=effective_category_id,
+            custom_weights=custom_weights,
+            limit=limit,
+            offset=offset,
+            category_name=effective_category_name
+        )
 
     def _enrich_with_local_products(self, results):
         """Helper to attach local product images, description, slug, and display badges if available."""
@@ -879,7 +927,7 @@ class RankingEngineClient:
             logger.warning(f"Failed to sync product #{product_id} to ranking engine: {e}")
             return None
 
-    def _fallback_local_search(self, query='', category_id=None, custom_weights=None, limit=20, offset=0):
+    def _fallback_local_search(self, query='', category_id=None, custom_weights=None, limit=20, offset=0, category_name=None, **kwargs):
         """
         Execute deterministic weighted ranking search across local Noise products.
         Runs when the ranking engine is offline or for local store items.
@@ -921,7 +969,9 @@ class RankingEngineClient:
         effective_cat_id = category_id or detected_cat_id
 
         q_filter = Product.query
-        if category_id:
+        if category_name:
+            q_filter = q_filter.filter(Product.category.ilike(f"%{category_name}%"))
+        elif category_id:
             cat_map = {
                 4: ['Wireless Earbuds'],
                 5: ['Smartwatches'],
@@ -930,6 +980,10 @@ class RankingEngineClient:
                 8: ['Smart Eyewear'],
                 9: ['Power Bank']
             }
+            if category_id in CATEGORY_SYNONYMS:
+                c_syn_name = CATEGORY_SYNONYMS[category_id].get('name')
+                if c_syn_name and category_id not in cat_map:
+                    cat_map[category_id] = [c_syn_name]
             dyn_map = self.get_category_map()
             cname = dyn_map.get(category_id)
             if cname and category_id not in cat_map:

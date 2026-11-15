@@ -1,0 +1,454 @@
+/* ==========================================================================
+   Noise Store Admin & Ranking Engine Dashboard CSS
+   ========================================================================== */
+
+:root {
+  --admin-bg: #090c10;
+  --admin-sidebar-bg: #0f141c;
+  --admin-card-bg: #141b24;
+  --admin-border: rgba(255, 255, 255, 0.08);
+  --admin-text-main: #f0f6fc;
+  --admin-text-muted: #8b949e;
+  
+  --admin-cyan: #00f2fe;
+  --admin-blue: #38bdf8;
+  --admin-green: #22c55e;
+  --admin-purple: #a855f7;
+  --admin-amber: #f59e0b;
+  --admin-red: #ef4444;
+}
+
+body.admin-body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--admin-bg);
+  color: var(--admin-text-main);
+  min-height: 100vh;
+  display: flex;
+}
+
+/* --------------------------------------------------------------------------
+   Sidebar
+   -------------------------------------------------------------------------- */
+.admin-sidebar {
+  width: 260px;
+  background-color: var(--admin-sidebar-bg);
+  border-right: 1px solid var(--admin-border);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  flex-shrink: 0;
+}
+
+.admin-sidebar-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--admin-border);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.admin-logo-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--admin-cyan);
+  box-shadow: 0 0 12px var(--admin-cyan);
+}
+
+.admin-brand-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.admin-brand-badge {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  background: rgba(0, 242, 254, 0.15);
+  color: var(--admin-cyan);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  margin-left: auto;
+}
+
+.admin-nav {
+  padding: 1.25rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1;
+}
+
+.admin-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: 8px;
+  color: var(--admin-text-muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.admin-nav-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--admin-text-main);
+}
+
+.admin-nav-item.active {
+  background: rgba(0, 242, 254, 0.12);
+  color: var(--admin-cyan);
+  font-weight: 600;
+  border-left: 3px solid var(--admin-cyan);
+}
+
+.admin-nav-item .nav-icon {
+  font-size: 1.1rem;
+}
+
+.admin-nav-item .engine-pill {
+  margin-left: auto;
+  font-size: 0.65rem;
+  background: rgba(34, 197, 94, 0.2);
+  color: var(--admin-green);
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+
+.admin-sidebar-footer {
+  padding: 1rem;
+  border-top: 1px solid var(--admin-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--admin-text-muted);
+}
+
+.admin-sidebar-footer a {
+  color: var(--admin-cyan);
+  text-decoration: none;
+}
+
+/* --------------------------------------------------------------------------
+   Main Admin Content Area
+   -------------------------------------------------------------------------- */
+.admin-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow-y: auto;
+}
+
+.admin-topbar {
+  background: var(--admin-sidebar-bg);
+  border-bottom: 1px solid var(--admin-border);
+  padding: 0.85rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.admin-page-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.btn-store-link {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--admin-border);
+  color: var(--admin-text-main);
+  padding: 0.45rem 0.85rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s;
+}
+
+.btn-store-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.admin-content-body {
+  padding: 2rem;
+  flex: 1;
+}
+
+/* --------------------------------------------------------------------------
+   KPI Stat Cards
+   -------------------------------------------------------------------------- */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+
+.stat-card.cyan::after { background: var(--admin-cyan); }
+.stat-card.green::after { background: var(--admin-green); }
+.stat-card.purple::after { background: var(--admin-purple); }
+.stat-card.amber::after { background: var(--admin-amber); }
+
+.stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--admin-text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--admin-text-main);
+  line-height: 1.2;
+}
+
+.stat-sub {
+  font-size: 0.78rem;
+  color: var(--admin-text-muted);
+  margin-top: 0.35rem;
+}
+
+/* --------------------------------------------------------------------------
+   Embedded Ranking Engine Section (/admin/ranking-engine)
+   -------------------------------------------------------------------------- */
+.ranking-engine-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.engine-control-bar {
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.engine-info-tag {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.engine-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: var(--admin-green);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.engine-status-pill.offline {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: var(--admin-red);
+}
+
+.engine-quick-tabs {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.engine-tab-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--admin-border);
+  color: var(--admin-text-muted);
+  padding: 0.45rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.engine-tab-btn:hover, .engine-tab-btn.active {
+  background: rgba(0, 242, 254, 0.15);
+  color: var(--admin-cyan);
+  border-color: var(--admin-cyan);
+}
+
+.engine-iframe-wrapper {
+  background: #0f141c;
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+}
+
+.iframe-browser-bar {
+  background: #141b24;
+  border-bottom: 1px solid var(--admin-border);
+  padding: 0.6rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.browser-dots {
+  display: flex;
+  gap: 5px;
+}
+
+.b-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.b-dot.red { background: #ff5f56; }
+.b-dot.yellow { background: #ffbd2e; }
+.b-dot.green { background: #27c93f; }
+
+.browser-address {
+  flex: 1;
+  background: #0a0d14;
+  border: 1px solid var(--admin-border);
+  border-radius: 6px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  color: var(--admin-text-muted);
+  font-family: monospace;
+}
+
+.engine-iframe {
+  width: 100%;
+  height: 780px;
+  border: none;
+  background: #fff;
+}
+
+/* --------------------------------------------------------------------------
+   Native API & Weight Calibration Card
+   -------------------------------------------------------------------------- */
+.api-tester-card {
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.tester-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+
+.tester-desc {
+  font-size: 0.82rem;
+  color: var(--admin-text-muted);
+  margin-bottom: 1.25rem;
+}
+
+.attributes-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+
+.attributes-table th, .attributes-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--admin-border);
+  text-align: left;
+}
+
+.attributes-table th {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--admin-text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+
+.attributes-table tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.weight-badge {
+  background: rgba(0, 242, 254, 0.15);
+  color: var(--admin-cyan);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+/* Tables general */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.admin-table th, .admin-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--admin-border);
+  text-align: left;
+}
+
+.admin-table th {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--admin-text-muted);
+  font-weight: 600;
+}
+
+.admin-table tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}

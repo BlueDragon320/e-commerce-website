@@ -436,16 +436,16 @@
 
             <!-- Iframe Target Tabs -->
             <div class="flex items-center gap-2 bg-slate-100 p-1 rounded-xl">
-                <button onclick="setIframeUrl('{{ engine_url }}/admin/category/{{ categories_data.get('categories', [{}])[0].get('category_id', 4) }}/overview')" class="iframe-tab active px-3 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-900 shadow-sm transition">
+                <button onclick="setIframeUrl('{{ engine_url }}/auth/sso?next=/admin/category/{{ categories_data.get('categories', [{}])[0].get('category_id', 4) }}/overview')" class="iframe-tab active px-3 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-900 shadow-sm transition">
                     Category Overview
                 </button>
-                <button onclick="setIframeUrl('{{ engine_url }}/admin')" class="iframe-tab px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition">
+                <button onclick="setIframeUrl('{{ engine_url }}/auth/sso?next=/admin')" class="iframe-tab px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition">
                     Engine Admin
                 </button>
-                <button onclick="setIframeUrl('{{ engine_url }}/insights')" class="iframe-tab px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition">
+                <button onclick="setIframeUrl('{{ engine_url }}/auth/sso?next=/insights')" class="iframe-tab px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition">
                     Search Insights
                 </button>
-                <a id="externalLink" href="{{ engine_url }}/admin/category/{{ categories_data.get('categories', [{}])[0].get('category_id', 4) }}/overview" target="_blank" class="p-1.5 text-slate-500 hover:text-rose-600 text-xs flex items-center gap-1 font-semibold" title="Open in new window">
+                <a id="externalLink" href="{{ engine_url }}/auth/sso?next=/admin/category/{{ categories_data.get('categories', [{}])[0].get('category_id', 4) }}/overview" target="_blank" class="p-1.5 text-slate-500 hover:text-rose-600 text-xs flex items-center gap-1 font-semibold" title="Open in new window">
                     <i class="fa-solid fa-arrow-up-right-from-square"></i>
                     <span class="hidden md:inline">Open External</span>
                 </a>
@@ -454,12 +454,12 @@
 
         <div class="text-[11px] text-slate-500 mb-2 flex items-center gap-1">
             <span class="font-bold text-slate-700">Current URL:</span>
-            <code id="currentIframeUrlText" class="font-mono bg-slate-100 px-2 py-0.5 rounded text-slate-800">{{ engine_url }}/admin/category/{{ categories_data.get('categories', [{}])[0].get('category_id', 4) }}/overview</code>
+            <code id="currentIframeUrlText" class="font-mono bg-slate-100 px-2 py-0.5 rounded text-slate-800">{{ engine_url }}/auth/sso?next=/admin/category/{{ categories_data.get('categories', [{}])[0].get('category_id', 4) }}/overview</code>
         </div>
 
         <!-- Embedded Iframe Container -->
         <div class="w-full h-[650px] rounded-2xl border border-slate-300 overflow-hidden shadow-inner bg-slate-50">
-            <iframe id="engineIframe" src="{{ engine_url }}/admin/category/{{ categories_data.get('categories', [{}])[0].get('category_id', 4) }}/overview" 
+            <iframe id="engineIframe" src="{{ engine_url }}/auth/sso?next=/admin/category/{{ categories_data.get('categories', [{}])[0].get('category_id', 4) }}/overview" 
                     class="w-full h-full border-0" 
                     title="Weighted Ranking Engine Console"></iframe>
         </div>

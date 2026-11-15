@@ -252,3 +252,20 @@ def test_storefront_hides_dynamic_weights(client):
     assert b'Sort Strategy' in resp.data
     assert b'Customer Rating' in resp.data
 
+def test_shop_headphones_category(client):
+    """Test that navigating to /shop?category=Headphones returns all headphone products."""
+    resp = client.get('/shop?category=Headphones')
+    assert resp.status_code == 200
+    assert b'Noise Two Wireless Headphones' in resp.data
+
+    resp_json = client.get('/shop?category=Headphones&format=json')
+    assert resp_json.status_code == 200
+    data = resp_json.get_json()
+    prods = data.get('products', [])
+    assert len(prods) >= 3
+    names = [p['name'] for p in prods]
+    assert 'Noise Two Wireless Headphones' in names
+    assert any('Air Wave Max 5' in n for n in names)
+    assert any('Air Wave Max 6' in n for n in names)
+
+
