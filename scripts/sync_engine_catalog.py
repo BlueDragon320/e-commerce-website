@@ -10,8 +10,7 @@ Sets Company 1 as 'Noise Official', creates 5 categories:
   - Smart Eyewear (ID 8)
 Registers attributes with calibrated weights (summing to 100%), seeds all 16 Noise products with
 attribute values, recomputes composite scores, and sets sponsored placement.
-Preserves Company 2 ('Apex Audio Labs') and manager 'apex_admin' with 'Studio Monitors' (ID 3)
-for seamless multi-tenant isolation testing.
+Noise Official is the sole tenant.
 """
 import sys
 import os
@@ -76,71 +75,7 @@ def sync():
         db.session.commit()
 
         # -------------------------------------------------------------
-        # 2. Company 2: Apex Audio Labs & apex_admin (Preserve Multi-Tenancy)
-        # -------------------------------------------------------------
-        company2 = db.session.get(Company, 2)
-        if not company2:
-            company2 = Company(company_id=2, name='Apex Audio Labs')
-            db.session.add(company2)
-            db.session.flush()
-        else:
-            company2.name = 'Apex Audio Labs'
-        db.session.commit()
-
-        apex_manager = User.query.filter_by(username='apex_admin').first()
-        if not apex_manager:
-            apex_manager = User(
-                username='apex_admin',
-                email='manager@apexaudio.com',
-                company_id=2,
-                is_admin=True,
-                is_superadmin=False
-            )
-            apex_manager.set_password('company123')
-            db.session.add(apex_manager)
-            print("  ✓ Tenant 2 Manager provisioned (apex_admin / company123)")
-        else:
-            apex_manager.company_id = 2
-            apex_manager.set_password('company123')
-        db.session.commit()
-
-        # Ensure Studio Monitors category exists for Company 2
-        studio = Category.query.filter_by(company_id=2, name='Studio Monitors').first()
-        if not studio:
-            studio = Category(category_id=3, name='Studio Monitors', company_id=2)
-            db.session.add(studio)
-            db.session.flush()
-
-            clarity = Attribute(name='Acoustic Clarity (%)', category_id=studio.category_id,
-                                data_type='numeric', min_value=0.0, max_value=100.0, weight=50.0, lower_is_better=False)
-            studio_price = Attribute(name='Price (INR)', category_id=studio.category_id,
-                                    data_type='numeric', min_value=10000.0, max_value=60000.0, weight=50.0, lower_is_better=True)
-            studio_rating = Attribute(name='Rating', category_id=studio.category_id,
-                                      data_type='numeric', min_value=0.0, max_value=5.0,
-                                      weight=0.0, lower_is_better=False, is_active=True)
-            db.session.add_all([clarity, studio_price, studio_rating])
-            db.session.flush()
-
-            monitors_data = [
-                ('Yamaha HS5', {'clarity': 92.0, 'price': 28500.0, 'rating': 4.6}, 67),
-                ('KRK Rokit 5 G4', {'clarity': 88.0, 'price': 24900.0, 'rating': 4.4}, 51),
-                ('JBL 305P MkII', {'clarity': 86.0, 'price': 21000.0, 'rating': 4.3}, 43),
-            ]
-            for m_name, values, hits in monitors_data:
-                prod = Product(name=m_name, category_id=studio.category_id, search_count=hits)
-                db.session.add(prod)
-                db.session.flush()
-                for attr, val in [(clarity, values['clarity']), (studio_price, values['price']), (studio_rating, values['rating'])]:
-                    pav = ProductAttrValue(product_id=prod.product_id, attribute_id=attr.attribute_id, raw_value=val)
-                    db.session.add(pav)
-            db.session.commit()
-            recompute_category_scores(studio.category_id, db.session, Product, Attribute, ProductAttrValue)
-            print("  ✓ Company 2 ('Apex Audio Labs') seeded with 'Studio Monitors' (3 products)")
-        else:
-            print("  ✓ Company 2 ('Apex Audio Labs') and 'Studio Monitors' catalog verified intact.")
-
-        # -------------------------------------------------------------
-        # 3. Company 1: Noise Official & Manager (techmart_admin)
+        # 2. Company 1: Noise Official & Manager (techmart_admin)
         # -------------------------------------------------------------
         company1 = db.session.get(Company, 1)
         if not company1:
@@ -405,9 +340,8 @@ def sync():
         print("  ✓ Analytics search logs generated.")
 
         print("\n🎉 Sync completed successfully! 16 Noise products indexed across 5 categories.")
-        print(f"   Platform Superadmin : admin / admin123 (Inspect all companies)")
-        print(f"   Tenant 1 ('Noise Official'): techmart_admin / company123 (Categories: 4, 5, 6, 7, 8)")
-        print(f"   Tenant 2 ('Apex Audio Labs'): apex_admin / company123 (Category 3: Studio Monitors)")
+        print(f"   Platform Superadmin : admin / admin123 (Inspect all categories)")
+        print(f"   Tenant ('Noise Official'): techmart_admin / company123, noise_admin / company123 (Categories: 4, 5, 6, 7, 8)")
 
 if __name__ == '__main__':
     sync()
