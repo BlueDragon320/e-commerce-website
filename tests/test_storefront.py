@@ -266,4 +266,63 @@ def test_shop_headphones_category(client):
     names = [p['name'] for p in prods]
     assert any('Noise Two Wireless Headphones' in n or 'Headphones' in n for n in names)
 
+def test_product_detail_updates_image_from_engine_breakdown(client, app):
+    """Test that product_detail route syncs image_url from engine breakdown."""
+    from unittest.mock import patch
+    with app.app_context():
+        from app import db
+        from app.models import Product
+        prod = db.session.get(Product, 1)
+        original_img = prod.image_url
+        new_engine_img = "https://images.unsplash.com/photo-detail-engine-sync?w=800"
+
+        mock_breakdown = {
+            'status': 'success',
+            'name': prod.name,
+            'image_url': new_engine_img,
+            'composite_score': 0.95,
+            'score_breakdown': [{'attribute_name': 'Price', 'raw_value': prod.price}]
+        }
+        with patch('app.engine_client.RankingEngineClient.get_product_breakdown', return_value=mock_breakdown):
+            resp = client.get('/product/1')
+            assert resp.status_code == 200
+            updated = db.session.get(Product, 1)
+            assert updated.image_url == new_engine_img
+
+            # Restore original
+            updated.image_url = original_img
+            db.session.commit()
+
+def test_product_detail_synthesizes_missing_product_with_image(client, app):
+    """Test that product_detail creates missing product locally with engine image_url."""
+    from unittest.mock import patch
+    with app.app_context():
+        from app import db
+        from app.models import Product
+        test_id = 98765
+        existing = db.session.get(Product, test_id)
+        if existing:
+            db.session.delete(existing)
+            db.session.commit()
+
+        mock_breakdown = {
+            'status': 'success',
+            'name': 'Detail Engine Synthesized Product',
+            'category_name': 'Headphones',
+            'image_url': 'https://images.unsplash.com/photo-synth-prod?w=800',
+            'composite_score': 0.91,
+            'score_breakdown': [{'attribute_name': 'Price', 'raw_value': 4999.0}]
+        }
+        with patch('app.engine_client.RankingEngineClient.get_product_breakdown', return_value=mock_breakdown):
+            resp = client.get(f'/product/{test_id}')
+            assert resp.status_code == 200
+            created = db.session.get(Product, test_id)
+            assert created is not None
+            assert created.image_url == 'https://images.unsplash.com/photo-synth-prod?w=800'
+            assert created.name == 'Detail Engine Synthesized Product'
+
+            # Clean up
+            db.session.delete(created)
+            db.session.commit()
+
 

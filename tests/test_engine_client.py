@@ -129,6 +129,88 @@ def test_product_breakdown_fallback(app):
             assert len(breakdown['score_breakdown']) == 4
             assert breakdown['composite_score'] > 0
 
+def test_enrich_with_local_products_image_sync_existing(app):
+    """Test that when engine returns image_url, existing local product is updated and committed."""
+    with app.app_context():
+        from app import db
+        from app.models import Product
+        client = RankingEngineClient()
+        prod = db.session.get(Product, 1)
+        original_img = prod.image_url
+        new_engine_img = "https://images.unsplash.com/photo-test-engine-image?w=800"
+
+        results = [{
+            'product_id': 1,
+            'name': prod.name,
+            'image_url': new_engine_img,
+            'attributes': {'Price': 1999.0}
+        }]
+        client._enrich_with_local_products(results)
+
+        assert results[0]['image_url'] == new_engine_img
+        updated_prod = db.session.get(Product, 1)
+        assert updated_prod.image_url == new_engine_img
+
+        # Restore original image
+        updated_prod.image_url = original_img
+        db.session.commit()
+
+def test_enrich_with_local_products_auto_create_missing(app):
+    """Test that missing product with engine image_url is auto-created in local database."""
+    with app.app_context():
+        from app import db
+        from app.models import Product
+        client = RankingEngineClient()
+        test_id = 99999
+        # Ensure not existing
+        existing = db.session.get(Product, test_id)
+        if existing:
+            db.session.delete(existing)
+            db.session.commit()
+
+        engine_img = "https://images.unsplash.com/photo-new-headphones-123?w=800"
+        results = [{
+            'product_id': test_id,
+            'name': 'Auto Created Engine Product',
+            'category_name': 'Headphones',
+            'image_url': engine_img,
+            'attributes': {'Price': 3499.0, 'Rating': 4.5}
+        }]
+        client._enrich_with_local_products(results)
+
+        assert results[0]['image_url'] == engine_img
+        new_prod = db.session.get(Product, test_id)
+        assert new_prod is not None
+        assert new_prod.name == 'Auto Created Engine Product'
+        assert new_prod.image_url == engine_img
+        assert new_prod.price == 3499.0
+
+        # Clean up
+        db.session.delete(new_prod)
+        db.session.commit()
+
+def test_sync_product_to_engine_payload_includes_image(app):
+    """Test that sync_product_to_engine includes image_url in payload sent to engine."""
+    with app.app_context():
+        client = RankingEngineClient()
+        test_prod = {
+            'id': 1,
+            'name': 'Sync Test Product',
+            'price': 1499.0,
+            'rating': 4.1,
+            'image_url': 'https://example.com/test-image.jpg'
+        }
+        with patch.dict(app.config, {'TESTING': False}):
+            mock_resp = MagicMock()
+            mock_resp.status_code = 200
+            with patch('requests.post', return_value=mock_resp) as mock_post:
+                res = client.sync_product_to_engine(test_prod)
+                assert res is not None
+                mock_post.assert_called_once()
+                call_json = mock_post.call_args[1]['json']
+                assert call_json['image_url'] == 'https://example.com/test-image.jpg'
+                assert call_json['price'] == 1499.0
+
 # -----------------------------------------------------------------------------
 # Live Integration Tests with Weighted Ranking Engine on Port 5000
 # -----------------------------------------------------------------------------

@@ -563,8 +563,11 @@ class RankingEngineClient:
                     if has_app_context():
                         from app.models import Product
                         local_p = db.session.get(Product, product_id)
-                        if local_p and getattr(local_p, 'is_sponsored', False):
-                            data['is_sponsored'] = True
+                        if local_p:
+                            if getattr(local_p, 'is_sponsored', False):
+                                data['is_sponsored'] = True
+                            if not data.get('image_url') and local_p.image_url:
+                                data['image_url'] = local_p.image_url
                     return data
         except (requests.exceptions.RequestException, ValueError) as e:
             logger.warning(f"Failed to fetch product breakdown: {e}")
@@ -800,6 +803,25 @@ class RankingEngineClient:
                         return float(val)
             return None
 
+        def _extract_engine_rating(item):
+            r = item.get('rating')
+            if r is not None:
+                try:
+                    return float(r)
+                except (ValueError, TypeError):
+                    pass
+            attrs = item.get('attributes', {})
+            if isinstance(attrs, dict):
+                r_attr = attrs.get('Rating')
+                if isinstance(r_attr, dict):
+                    try:
+                        return float(r_attr.get('raw_value', 4.3))
+                    except (ValueError, TypeError):
+                        pass
+                elif isinstance(r_attr, (int, float)):
+                    return float(r_attr)
+            return 4.3
+
         for item in results:
             p_name = item.get('name', '').strip()
             prod = prods_by_name.get(p_name.lower()) if p_name else None
@@ -807,6 +829,69 @@ class RankingEngineClient:
                 prod = prods_by_id.get(item['product_id'])
 
             engine_price = _extract_engine_price(item.get('attributes', {}))
+
+            # Resolve and sync image URL
+            raw_eng_img = item.get('image_url')
+            engine_img = raw_eng_img.strip() if isinstance(raw_eng_img, str) else None
+
+            if engine_img:
+                if prod:
+                    if prod.image_url != engine_img:
+                        prod.image_url = engine_img
+                        try:
+                            db.session.commit()
+                        except Exception:
+                            db.session.rollback()
+                    item['image_url'] = engine_img
+                else:
+                    # Auto-create product in local storefront DB if missing!
+                    from slugify import slugify
+                    clean_slug = slugify(p_name) if p_name else f"product-{item.get('product_id')}"
+                    existing = None
+                    if has_app_context():
+                        from app.models import Product
+                        existing = Product.query.filter((Product.slug == clean_slug) | (Product.name == p_name)).first()
+                        if not existing:
+                            rating_val = _extract_engine_rating(item)
+                            try:
+                                review_val = int(item.get('review_count', 145))
+                            except (ValueError, TypeError):
+                                review_val = 145
+
+                            new_prod = Product(
+                                id=item.get('product_id'),
+                                name=p_name or f"Product #{item.get('product_id')}",
+                                slug=clean_slug,
+                                category=item.get('category_name') or 'Electronics',
+                                price=engine_price if engine_price is not None else 2999.0,
+                                image_url=engine_img,
+                                description='High performance electronics integrated with Weighted Ranking Engine analytics.',
+                                rating=rating_val,
+                                review_count=review_val,
+                                in_stock=True
+                            )
+                            db.session.add(new_prod)
+                            try:
+                                db.session.commit()
+                                item['local_product_id'] = new_prod.id
+                                prod = new_prod
+                            except Exception:
+                                db.session.rollback()
+                        else:
+                            item['local_product_id'] = existing.id
+                            if existing.image_url != engine_img:
+                                existing.image_url = engine_img
+                                try:
+                                    db.session.commit()
+                                except Exception:
+                                    db.session.rollback()
+                            prod = existing
+                    item['image_url'] = engine_img
+            else:
+                if prod and prod.image_url:
+                    item['image_url'] = prod.image_url
+                else:
+                    item['image_url'] = 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600'
 
             if prod:
                 # If local product has erroneous price (<= 5.0) and engine has a valid price > 5.0, sync it
@@ -818,7 +903,6 @@ class RankingEngineClient:
                         db.session.rollback()
 
                 item['local_product_id'] = prod.id
-                item['image_url'] = prod.image_url
                 item['description'] = prod.description
                 item['slug'] = prod.slug
                 item['price'] = prod.price
@@ -835,11 +919,12 @@ class RankingEngineClient:
                 if getattr(prod, 'is_sponsored', False):
                     item['is_sponsored'] = True
             else:
-                if 'image_url' not in item or not item['image_url']:
-                    item['image_url'] = 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600'
                 item['price'] = engine_price if engine_price is not None else 2999.0
-                item['rating'] = item.get('rating') or item.get('attributes', {}).get('Rating', {}).get('raw_value', 4.3)
-                item['review_count'] = item.get('review_count', 145)
+                item['rating'] = _extract_engine_rating(item)
+                try:
+                    item['review_count'] = int(item.get('review_count', 145))
+                except (ValueError, TypeError):
+                    item['review_count'] = 145
 
             # Ensure each product item in results has a list of display_badges
             if item.get('display_badges'):
@@ -875,6 +960,7 @@ class RankingEngineClient:
         price_val = getattr(product, 'price', None) if not isinstance(product, dict) else product.get('price')
         rating_val = getattr(product, 'rating', None) if not isinstance(product, dict) else product.get('rating')
         name_val = getattr(product, 'name', None) if not isinstance(product, dict) else product.get('name')
+        image_url_val = getattr(product, 'image_url', None) if not isinstance(product, dict) else product.get('image_url')
 
         if product_id is None:
             logger.warning("sync_product_to_engine called without product id")
@@ -887,11 +973,13 @@ class RankingEngineClient:
         clean_price = float(price_val) if price_val is not None else 0.0
         clean_rating = float(rating_val) if rating_val is not None else 0.0
         clean_name = str(name_val).strip() if name_val else ''
+        clean_image = str(image_url_val).strip() if image_url_val else ''
 
         payload = {
             'price': clean_price,
             'rating': clean_rating,
             'name': clean_name,
+            'image_url': clean_image,
             'attributes': {
                 'Price (INR)': clean_price,
                 'Price': clean_price,
@@ -1217,6 +1305,7 @@ class RankingEngineClient:
             'product_id': prod.id,
             'name': prod.name,
             'category_name': prod.category,
+            'image_url': prod.image_url,
             'composite_score': score,
             'score_pct': f"{score * 100:.2f}%",
             'is_sponsored': bool(getattr(prod, 'is_sponsored', False)),

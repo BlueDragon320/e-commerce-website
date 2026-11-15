@@ -229,6 +229,9 @@ def product_detail(product_id):
         if breakdown_data.get('status') == 'success':
             # Synthesize display product from engine data and persist to local DB
             price_val = engine_price if (engine_price is not None and engine_price > 0) else 2999.0
+            image_url_val = (breakdown_data.get('image_url') or '').strip() if isinstance(breakdown_data.get('image_url'), str) else ''
+            if not image_url_val:
+                image_url_val = 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600'
 
             product = Product(
                 id=product_id,
@@ -238,7 +241,7 @@ def product_detail(product_id):
                 price=price_val,
                 rating=4.2,
                 review_count=145,
-                image_url='https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600',
+                image_url=image_url_val,
                 description='High performance electronics integrated with Weighted Ranking Engine analytics.',
                 in_stock=True
             )
@@ -259,6 +262,16 @@ def product_detail(product_id):
                 db.session.commit()
             except Exception:
                 db.session.rollback()
+
+        if breakdown_data.get('image_url'):
+            raw_eng_img = breakdown_data.get('image_url')
+            eng_img = raw_eng_img.strip() if isinstance(raw_eng_img, str) else ''
+            if eng_img and product.image_url != eng_img:
+                product.image_url = eng_img
+                try:
+                    db.session.commit()
+                except Exception:
+                    db.session.rollback()
 
     related_products = Product.query.filter(
         Product.category == product.category,
