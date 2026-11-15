@@ -23,6 +23,8 @@ def resolve_engine_dir():
     """Dynamically resolve the Product-Catalogue-Ranked-Search directory."""
     candidates = [
         os.environ.get('RANKING_ENGINE_DIR'),
+        os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'weighted-ranking-engine')),
+        os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'weighted-ranking-engine')),
         os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'Product-Catalogue-Ranked-Search')),
         os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Product-Catalogue-Ranked-Search')),
         '/home/blue/mini-pjct/Product-Catalogue-Ranked-Search',
@@ -477,6 +479,7 @@ def sync():
             slog = SearchLog(
                 query_text=q_text,
                 category_id=cid,
+                company_id=1,
                 results_count=r_cnt,
                 searched_at=datetime.now(timezone.utc) - timedelta(minutes=10)
             )

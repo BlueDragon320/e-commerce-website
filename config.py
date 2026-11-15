@@ -13,7 +13,7 @@ class BaseConfig:
     RANKING_COMPANY_ID = int(os.environ.get('RANKING_COMPANY_ID', '1'))
     
     # Storefront settings
-    PORT = int(os.environ.get('PORT', '8000'))
+    PORT = int(os.environ.get('PORT', '5001'))
     CURRENCY_SYMBOL = "₹"
     FREE_SHIPPING_THRESHOLD = 999.0
     SHIPPING_FEE = 99.0

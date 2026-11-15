@@ -326,3 +326,58 @@ def test_product_detail_synthesizes_missing_product_with_image(client, app):
             db.session.commit()
 
 
+def test_cart_add_validation_invalid_quantity_and_out_of_stock(client, app):
+    """Test add_to_cart rejects quantity <= 0 and out_of_stock products."""
+    from app import db
+    from app.models import Product
+    with app.app_context():
+        # Invalid quantity (<= 0)
+        resp_qty_zero = client.post(
+            '/cart/add/1',
+            json={'quantity': 0},
+            headers={'Accept': 'application/json'}
+        )
+        assert resp_qty_zero.status_code == 400
+        assert resp_qty_zero.get_json()['status'] == 'error'
+
+        resp_qty_neg = client.post(
+            '/cart/add/1',
+            json={'quantity': -5},
+            headers={'Accept': 'application/json'}
+        )
+        assert resp_qty_neg.status_code == 400
+
+        # Out of stock product
+        p = db.session.get(Product, 1)
+        orig_stock = p.in_stock
+        try:
+            p.in_stock = False
+            db.session.commit()
+
+            resp_oos = client.post(
+                '/cart/add/1',
+                json={'quantity': 1},
+                headers={'Accept': 'application/json'}
+            )
+            assert resp_oos.status_code == 400
+            assert 'out of stock' in resp_oos.get_json()['message'].lower()
+        finally:
+            p.in_stock = orig_stock
+            db.session.commit()
+
+
+def test_shop_json_filters_internal_ranking_metrics(client):
+    """Test that /shop?format=json filters out composite_score, score_pct, score_breakdown."""
+    resp = client.get('/shop?format=json')
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert data['status'] == 'success'
+    products = data.get('products', [])
+    assert len(products) > 0
+    for p in products:
+        assert 'composite_score' not in p
+        assert 'score_pct' not in p
+        assert 'score_breakdown' not in p
+
+
+

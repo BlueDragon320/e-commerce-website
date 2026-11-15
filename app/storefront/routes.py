@@ -183,11 +183,18 @@ def shop():
         item['display_rank'] = idx
 
     if request.headers.get('Accept') == 'application/json' or request.args.get('format') == 'json':
+        clean_products = []
+        for p in products:
+            p_clean = dict(p)
+            p_clean.pop('composite_score', None)
+            p_clean.pop('score_pct', None)
+            p_clean.pop('score_breakdown', None)
+            clean_products.append(p_clean)
         return jsonify({
             'status': 'success',
             'engine_status': engine_status,
-            'total': len(products),
-            'products': products
+            'total': len(clean_products),
+            'products': clean_products
         })
 
     categories_raw = db.session.query(Product.category).distinct().all()
@@ -380,19 +387,40 @@ def view_cart():
         total=total
     )
 
-@storefront.route('/cart/add/<int:product_id>', methods=['GET', 'POST'])
+@storefront.route('/cart/add/<int:product_id>', methods=['POST', 'GET'])
 def add_to_cart(product_id):
     """Add a product to the user's cart."""
+    if request.method == 'GET':
+        current_app.logger.warning(f"GET request used on state-changing endpoint /cart/add/{product_id}; prefer POST.")
+
     sid = get_session_id()
     product = db.get_or_404(Product, product_id)
 
     qty = 1
     if request.is_json:
-        qty = int(request.get_json().get('quantity', 1))
+        qty_val = request.get_json(silent=True) or {}
+        qty = qty_val.get('quantity', 1)
     elif request.form.get('quantity'):
-        qty = int(request.form.get('quantity', 1))
+        qty = request.form.get('quantity', 1)
     elif request.args.get('quantity'):
-        qty = int(request.args.get('quantity', 1))
+        qty = request.args.get('quantity', 1)
+
+    try:
+        qty = int(qty)
+    except (ValueError, TypeError):
+        qty = 0
+
+    if not product.in_stock:
+        if request.is_json or request.headers.get('Accept') == 'application/json':
+            return jsonify({'status': 'error', 'message': f"Product '{product.name}' is currently out of stock."}), 400
+        flash(f"'{product.name}' is currently out of stock.", 'warning')
+        return redirect(request.referrer or url_for('storefront.shop'))
+
+    if qty <= 0:
+        if request.is_json or request.headers.get('Accept') == 'application/json':
+            return jsonify({'status': 'error', 'message': 'Quantity must be greater than zero.'}), 400
+        flash('Quantity must be greater than zero.', 'warning')
+        return redirect(request.referrer or url_for('storefront.shop'))
 
     item = CartItem.query.filter_by(session_id=sid, product_id=product.id).first()
     if item:
@@ -414,9 +442,12 @@ def add_to_cart(product_id):
     flash(f"Added '{product.name}' to cart!", 'success')
     return redirect(request.referrer or url_for('storefront.view_cart'))
 
-@storefront.route('/cart/remove/<int:item_id>', methods=['GET', 'POST'])
+@storefront.route('/cart/remove/<int:item_id>', methods=['POST', 'GET'])
 def remove_from_cart(item_id):
     """Remove an item from the cart."""
+    if request.method == 'GET':
+        current_app.logger.warning(f"GET request used on state-changing endpoint /cart/remove/{item_id}; prefer POST.")
+
     sid = get_session_id()
     item = CartItem.query.filter_by(id=item_id, session_id=sid).first()
     if item:
