@@ -880,6 +880,10 @@ class RankingEngineClient:
             logger.warning("sync_product_to_engine called without product id")
             return None
 
+        if has_app_context() and current_app.config.get("TESTING"):
+            # Prevent test runs with in-memory DBs from corrupting live ranking engine
+            return None
+
         clean_price = float(price_val) if price_val is not None else 0.0
         clean_rating = float(rating_val) if rating_val is not None else 0.0
         clean_name = str(name_val).strip() if name_val else ''

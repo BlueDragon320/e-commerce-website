@@ -3,114 +3,49 @@ The event loop scope for asynchronous fixtures will default to the "fixture" cac
 
   warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
 ============================= test session starts ==============================
-platform linux -- Python 3.14.10, pytest-9.2.0, pluggy-1.7.0 -- /usr/bin/python3
+platform linux -- Python 3.14.10, pytest-9.2.0, pluggy-1.7.0 -- /usr/bin/python
 cachedir: .pytest_cache
-rootdir: /home/blue/mini-pjct/e-commerce-website
+rootdir: /home/blue/MiniProject/ECommerce-Site
 plugins: anyio-4.15.1, playwright-0.10.0, asyncio-1.4.0, platformdirs-4.14.5
 asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
-collecting ... collected 38 items
+collecting ... collected 37 items
 
 tests/test_admin.py::test_admin_auth_required PASSED                     [  2%]
 tests/test_admin.py::test_admin_login_logout_flow PASSED                 [  5%]
-tests/test_admin.py::test_admin_dashboard PASSED                         [  7%]
+tests/test_admin.py::test_admin_dashboard PASSED                         [  8%]
 tests/test_admin.py::test_admin_products_list PASSED                     [ 10%]
 tests/test_admin.py::test_admin_product_crud PASSED                      [ 13%]
-tests/test_admin.py::test_admin_ranking_engine_page PASSED               [ 15%]
-tests/test_admin.py::test_admin_ranking_engine_product_names_and_rankings FAILED [ 18%]
+tests/test_admin.py::test_admin_ranking_engine_page PASSED               [ 16%]
+tests/test_admin.py::test_admin_ranking_engine_product_names_and_rankings PASSED [ 18%]
 tests/test_admin.py::test_admin_products_renders_engine_rank_metadata PASSED [ 21%]
-tests/test_admin.py::test_admin_api_engine_status PASSED                 [ 23%]
-tests/test_admin.py::test_admin_toggle_sponsored PASSED                  [ 26%]
-tests/test_admin.py::test_admin_product_rating_conversion PASSED         [ 28%]
-tests/test_engine_client.py::test_engine_client_init PASSED              [ 31%]
-tests/test_engine_client.py::test_health_check_online PASSED             [ 34%]
-tests/test_engine_client.py::test_health_check_offline PASSED            [ 36%]
-tests/test_engine_client.py::test_get_categories_online PASSED           [ 39%]
-tests/test_engine_client.py::test_get_categories_offline_fallback PASSED [ 42%]
-tests/test_engine_client.py::test_search_offline_fallback PASSED         [ 44%]
-tests/test_engine_client.py::test_search_with_custom_weights PASSED      [ 47%]
-tests/test_engine_client.py::test_product_breakdown_fallback PASSED      [ 50%]
-tests/test_engine_client.py::test_live_engine_health_and_company SKIPPED [ 52%]
-tests/test_engine_client.py::test_live_engine_categories_noise SKIPPED   [ 55%]
-tests/test_engine_client.py::test_live_engine_search_noise_products SKIPPED [ 57%]
-tests/test_engine_client.py::test_live_engine_category_filtering SKIPPED [ 60%]
-tests/test_storefront.py::test_homepage PASSED                           [ 63%]
-tests/test_storefront.py::test_shop_page PASSED                          [ 65%]
-tests/test_storefront.py::test_product_detail PASSED                     [ 68%]
-tests/test_storefront.py::test_smart_rank_api PASSED                     [ 71%]
-tests/test_storefront.py::test_cart_operations PASSED                    [ 73%]
-tests/test_storefront.py::test_checkout_flow PASSED                      [ 76%]
-tests/test_storefront.py::test_checkout_out_of_stock_rejected PASSED     [ 78%]
-tests/test_storefront.py::test_search_synonyms_ear_phones PASSED         [ 81%]
-tests/test_storefront.py::test_search_synonyms_ear_pods PASSED           [ 84%]
-tests/test_storefront.py::test_search_headphones_whitespace_and_typos PASSED [ 86%]
-tests/test_storefront.py::test_search_typo_tolerance_and_whitespace PASSED [ 89%]
-tests/test_storefront.py::test_sorting_strategies PASSED                 [ 92%]
-tests/test_storefront.py::test_sponsored_pinned_at_rank_one FAILED       [ 94%]
-tests/test_storefront.py::test_storefront_hides_dynamic_weights PASSED   [ 97%]
-tests/test_storefront.py::test_shop_headphones_category FAILED           [100%]
+tests/test_admin.py::test_admin_api_engine_status PASSED                 [ 24%]
+tests/test_admin.py::test_admin_toggle_sponsored PASSED                  [ 27%]
+tests/test_admin.py::test_admin_product_rating_conversion PASSED         [ 29%]
+tests/test_engine_client.py::test_engine_client_init PASSED              [ 32%]
+tests/test_engine_client.py::test_health_check_online PASSED             [ 35%]
+tests/test_engine_client.py::test_health_check_offline PASSED            [ 37%]
+tests/test_engine_client.py::test_get_categories_online PASSED           [ 40%]
+tests/test_engine_client.py::test_get_categories_offline_fallback PASSED [ 43%]
+tests/test_engine_client.py::test_search_offline_fallback PASSED         [ 45%]
+tests/test_engine_client.py::test_search_with_custom_weights PASSED      [ 48%]
+tests/test_engine_client.py::test_product_breakdown_fallback PASSED      [ 51%]
+tests/test_engine_client.py::test_live_engine_health_and_company PASSED  [ 54%]
+tests/test_engine_client.py::test_live_engine_categories_noise PASSED    [ 56%]
+tests/test_engine_client.py::test_live_engine_search_noise_products PASSED [ 59%]
+tests/test_engine_client.py::test_live_engine_category_filtering PASSED  [ 62%]
+tests/test_storefront.py::test_homepage PASSED                           [ 64%]
+tests/test_storefront.py::test_shop_page PASSED                          [ 67%]
+tests/test_storefront.py::test_product_detail PASSED                     [ 70%]
+tests/test_storefront.py::test_smart_rank_api PASSED                     [ 72%]
+tests/test_storefront.py::test_cart_operations PASSED                    [ 75%]
+tests/test_storefront.py::test_checkout_flow PASSED                      [ 78%]
+tests/test_storefront.py::test_checkout_out_of_stock_rejected PASSED     [ 81%]
+tests/test_storefront.py::test_search_synonyms_ear_phones PASSED         [ 83%]
+tests/test_storefront.py::test_search_synonyms_ear_pods PASSED           [ 86%]
+tests/test_storefront.py::test_search_headphones_whitespace_and_typos PASSED [ 89%]
+tests/test_storefront.py::test_search_typo_tolerance_and_whitespace PASSED [ 91%]
+tests/test_storefront.py::test_sorting_strategies PASSED                 [ 94%]
+tests/test_storefront.py::test_sponsored_pinned_at_rank_one PASSED       [ 97%]
+tests/test_storefront.py::test_storefront_hides_dynamic_weights PASSED   [100%]
 
-=================================== FAILURES ===================================
-_____________ test_admin_ranking_engine_product_names_and_rankings _____________
-
-admin_client = <FlaskClient <Flask 'app'>>
-
-    def test_admin_ranking_engine_product_names_and_rankings(admin_client):
-        """
-        Verify that /admin/ranking-engine:
-        - Returns HTTP 200.
-        - Contains product names in the response (e.g. Noise Buds VS102, Noise ColorFit Ultra 3, Noise Air Buds Pro 2).
-        - Contains engine ranking elements (e.g. rank badges, composite scores).
-        """
-        resp = admin_client.get('/admin/ranking-engine')
-        assert resp.status_code == 200
-        # Verify product names appear in ranked product tables
-        assert b'Noise Buds VS102' in resp.data
-        assert b'Noise ColorFit Ultra 3' in resp.data
->       assert b'Noise Air Buds Pro 2' in resp.data
-E       assert b'Noise Air Buds Pro 2' in b'<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>Search Engine Admin \xe2\x80\x94 Weighted Ranking Engine B2B Console</title>\n    <script src="https://cdn.tailwindcss.com"></script>\n    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">\n    <style>\n        body { font-family: system-ui, -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; }\n    </style>\n</head>\n<body class="bg-slate-100 text-slate-800 flex h-screen overflow-hidden">\n    <!-- Admin Sidebar -->\n    <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col flex-shrink-0 border-r border-slate-800">\n        <!-- Logo -->\n        <div class="h-16 flex items-center justify-between px-6 border-b border-slate-800">\n            <a href="/admin" class="flex items-center gap-2">\n                <span class="text-xl font-black tracking-tight text-white">noise<span class="text-rose-500">.</span>admin</span>\n            </a>\n        </div>\n\n        <!-- Navigation Menu -->\n        <nav class="flex-1 px-...bold bg-slate-100 text-slate-500">NO</span>\'}\n                        </td>\n                        <td class="px-4 py-3 font-bold text-amber-500 text-xs"><i class="fa-solid fa-star text-[10px]"></i> ${ratingVal}</td>\n                    `;\n                    tbody.appendChild(tr);\n                });\n            } else {\n                tbody.innerHTML = \'<tr><td colspan="7" class="px-4 py-6 text-center text-slate-400">No products returned for the selected category.</td></tr>\';\n                if (simCountBadge) simCountBadge.textContent = \'0 products\';\n            }\n        } catch (err) {\n            tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-6 text-center text-rose-500">Simulation query error: ${err.message}</td></tr>`;\n            if (simStatus) simStatus.textContent = \'Error\';\n        }\n    }\n\n    const runBtn = document.getElementById(\'runSimulationBtn\');\n    if (runBtn) runBtn.addEventListener(\'click\', runRankSimulation);\n\n    // Initial load simulation results on page ready\n    document.addEventListener(\'DOMContentLoaded\', () => {\n        updateSimLabels();\n        runRankSimulation();\n    });\n</script>\n\n</body>\n</html>'
-E        +  where b'<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>Search Engine Admin \xe2\x80\x94 Weighted Ranking Engine B2B Console</title>\n    <script src="https://cdn.tailwindcss.com"></script>\n    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">\n    <style>\n        body { font-family: system-ui, -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; }\n    </style>\n</head>\n<body class="bg-slate-100 text-slate-800 flex h-screen overflow-hidden">\n    <!-- Admin Sidebar -->\n    <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col flex-shrink-0 border-r border-slate-800">\n        <!-- Logo -->\n        <div class="h-16 flex items-center justify-between px-6 border-b border-slate-800">\n            <a href="/admin" class="flex items-center gap-2">\n                <span class="text-xl font-black tracking-tight text-white">noise<span class="text-rose-500">.</span>admin</span>\n            </a>\n        </div>\n\n        <!-- Navigation Menu -->\n        <nav class="flex-1 px-...bold bg-slate-100 text-slate-500">NO</span>\'}\n                        </td>\n                        <td class="px-4 py-3 font-bold text-amber-500 text-xs"><i class="fa-solid fa-star text-[10px]"></i> ${ratingVal}</td>\n                    `;\n                    tbody.appendChild(tr);\n                });\n            } else {\n                tbody.innerHTML = \'<tr><td colspan="7" class="px-4 py-6 text-center text-slate-400">No products returned for the selected category.</td></tr>\';\n                if (simCountBadge) simCountBadge.textContent = \'0 products\';\n            }\n        } catch (err) {\n            tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-6 text-center text-rose-500">Simulation query error: ${err.message}</td></tr>`;\n            if (simStatus) simStatus.textContent = \'Error\';\n        }\n    }\n\n    const runBtn = document.getElementById(\'runSimulationBtn\');\n    if (runBtn) runBtn.addEventListener(\'click\', runRankSimulation);\n\n    // Initial load simulation results on page ready\n    document.addEventListener(\'DOMContentLoaded\', () => {\n        updateSimLabels();\n        runRankSimulation();\n    });\n</script>\n\n</body>\n</html>' = <WrapperTestResponse 205565 bytes [200 OK]>.data
-
-tests/test_admin.py:154: AssertionError
-______________________ test_sponsored_pinned_at_rank_one _______________________
-
-client = <FlaskClient <Flask 'app'>>
-
-    def test_sponsored_pinned_at_rank_one(client):
-        """Verify that when a product is sponsored, it is guaranteed rank #1 across all sort modes."""
-        # In Wireless Earbuds category, Noise Air Buds Pro 2 with ANC is sponsored
-        for sort_mode in ['relevant', 'price_asc', 'price_desc', 'rating']:
-            resp = client.get(f'/shop?category=Wireless+Earbuds&sort={sort_mode}&format=json')
-            assert resp.status_code == 200
-            prods = resp.get_json().get('products', [])
-            assert len(prods) > 0
-            first_item = prods[0]
-            assert first_item['is_sponsored'] is True
-            assert first_item['display_rank'] == 1
->           assert 'Noise Air Buds Pro 2' in first_item['name']
-E           AssertionError: assert 'Noise Air Buds Pro 2' in 'Rating Test 88'
-
-tests/test_storefront.py:240: AssertionError
-________________________ test_shop_headphones_category _________________________
-
-client = <FlaskClient <Flask 'app'>>
-
-    def test_shop_headphones_category(client):
-        """Test that navigating to /shop?category=Headphones returns all headphone products."""
-        resp = client.get('/shop?category=Headphones')
-        assert resp.status_code == 200
-        assert b'Noise Two Wireless Headphones' in resp.data
-    
-        resp_json = client.get('/shop?category=Headphones&format=json')
-        assert resp_json.status_code == 200
-        data = resp_json.get_json()
-        prods = data.get('products', [])
->       assert len(prods) >= 3
-E       AssertionError: assert 1 >= 3
-E        +  where 1 = len([{'anc': False, 'attributes': {'Active Noise Cancelling': {'attribute_id': 15, 'data_type': 'binary', 'display_value': 'NO', 'lower_is_better': False, ...}, 'Battery Life (hours)': {'attribute_id': 12, 'data_type': 'numeric', 'display_value': 50.0, 'lower_is_better': False, ...}, 'Price (INR)': {'attribute_id': 13, 'data_type': 'numeric', 'display_value': 1799.0, 'lower_is_better': True, ...}, 'Rating': {'attribute_id': 14, 'data_type': 'numeric', 'display_value': 4.2, 'lower_is_better': False, ...}}, 'battery_life': 50.0, 'category_id': 7, ...}])
-
-tests/test_storefront.py:265: AssertionError
-=========================== short test summary info ============================
-FAILED tests/test_admin.py::test_admin_ranking_engine_product_names_and_rankings
-FAILED tests/test_storefront.py::test_sponsored_pinned_at_rank_one - Assertio...
-FAILED tests/test_storefront.py::test_shop_headphones_category - AssertionErr...
-=================== 3 failed, 31 passed, 4 skipped in 2.58s ====================
+============================== 37 passed in 2.81s ==============================
