@@ -326,6 +326,38 @@ def test_product_detail_synthesizes_missing_product_with_image(client, app):
             db.session.commit()
 
 
+def test_product_detail_rating_sync_existing_product(client, app):
+    """Test that viewing product detail syncs engine rating to existing local product."""
+    from unittest.mock import patch
+    from app import db
+    from app.models import Product
+    with app.app_context():
+        prod = db.session.get(Product, 1)
+        original_rating = prod.rating
+        prod.rating = 4.2
+        db.session.commit()
+
+        mock_breakdown = {
+            'status': 'success',
+            'name': prod.name,
+            'category_name': prod.category,
+            'score_breakdown': [
+                {'attribute_name': 'Rating', 'raw_value': 4.6},
+                {'attribute_name': 'Price', 'raw_value': 1999.0}
+            ]
+        }
+        with patch('app.engine_client.RankingEngineClient.get_product_breakdown', return_value=mock_breakdown):
+            resp = client.get('/product/1')
+            assert resp.status_code == 200
+            updated_prod = db.session.get(Product, 1)
+            assert updated_prod.rating == 4.6
+            assert b'4.6' in resp.data
+
+            # Restore original rating
+            updated_prod.rating = original_rating
+            db.session.commit()
+
+
 def test_cart_add_validation_invalid_quantity_and_out_of_stock(client, app):
     """Test add_to_cart rejects quantity <= 0 and out_of_stock products."""
     from app import db

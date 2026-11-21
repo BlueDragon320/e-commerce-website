@@ -803,7 +803,7 @@ class RankingEngineClient:
                         return float(val)
             return None
 
-        def _extract_engine_rating(item):
+        def _extract_engine_rating(item, fallback=None):
             r = item.get('rating')
             if r is not None:
                 try:
@@ -812,15 +812,21 @@ class RankingEngineClient:
                     pass
             attrs = item.get('attributes', {})
             if isinstance(attrs, dict):
-                r_attr = attrs.get('Rating')
-                if isinstance(r_attr, dict):
-                    try:
-                        return float(r_attr.get('raw_value', 4.3))
-                    except (ValueError, TypeError):
-                        pass
-                elif isinstance(r_attr, (int, float)):
-                    return float(r_attr)
-            return 4.3
+                for key, val in attrs.items():
+                    if 'rating' in str(key).lower():
+                        if isinstance(val, dict):
+                            val_raw = val.get('raw_value', val.get('value'))
+                            if val_raw is not None:
+                                try:
+                                    return float(val_raw)
+                                except (ValueError, TypeError):
+                                    pass
+                        elif val is not None:
+                            try:
+                                return float(val)
+                            except (ValueError, TypeError):
+                                pass
+            return fallback
 
         for item in results:
             p_name = item.get('name', '').strip()
@@ -855,6 +861,8 @@ class RankingEngineClient:
                         existing = Product.query.filter((Product.slug == clean_slug) | (Product.name == p_name)).first()
                         if not existing:
                             rating_val = _extract_engine_rating(item)
+                            if rating_val is None or rating_val <= 0.0:
+                                rating_val = 4.3
                             try:
                                 review_val = int(item.get('review_count', 145))
                             except (ValueError, TypeError):
@@ -904,6 +912,14 @@ class RankingEngineClient:
                     except Exception:
                         db.session.rollback()
 
+                engine_rating = _extract_engine_rating(item)
+                if engine_rating is not None and (prod.rating is None or prod.rating <= 0.0 or prod.rating != engine_rating):
+                    prod.rating = engine_rating
+                    try:
+                        db.session.commit()
+                    except Exception:
+                        db.session.rollback()
+
                 item['local_product_id'] = prod.id
                 item['description'] = prod.description
                 item['slug'] = prod.slug
@@ -922,7 +938,8 @@ class RankingEngineClient:
                     item['is_sponsored'] = True
             else:
                 item['price'] = engine_price if engine_price is not None else 2999.0
-                item['rating'] = _extract_engine_rating(item)
+                eng_rating = _extract_engine_rating(item)
+                item['rating'] = eng_rating if (eng_rating is not None and eng_rating > 0.0) else 4.3
                 try:
                     item['review_count'] = int(item.get('review_count', 145))
                 except (ValueError, TypeError):

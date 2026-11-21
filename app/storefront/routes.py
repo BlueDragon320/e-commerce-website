@@ -222,15 +222,27 @@ def product_detail(product_id):
     product = db.session.get(Product, product_id)
     breakdown_data = engine_client.get_product_breakdown(product_id)
 
-    # Find price attribute by looking through score_breakdown case-insensitively
+    # Find price and rating attributes by looking through score_breakdown case-insensitively
     engine_price = None
+    engine_rating = None
     for item in breakdown_data.get('score_breakdown', []):
-        if 'price' in item.get('attribute_name', '').lower():
+        attr_name = item.get('attribute_name', '').lower()
+        if 'price' in attr_name and engine_price is None:
             try:
                 engine_price = float(item.get('raw_value'))
-                break
             except (ValueError, TypeError):
                 pass
+        if 'rating' in attr_name and engine_rating is None:
+            try:
+                engine_rating = float(item.get('raw_value'))
+            except (ValueError, TypeError):
+                pass
+
+    if engine_rating is None and breakdown_data.get('rating') is not None:
+        try:
+            engine_rating = float(breakdown_data.get('rating'))
+        except (ValueError, TypeError):
+            pass
 
     if not product:
         if breakdown_data.get('status') == 'success':
@@ -246,7 +258,7 @@ def product_detail(product_id):
                 slug=f"product-{product_id}",
                 category=breakdown_data.get('category_name', 'Electronics'),
                 price=price_val,
-                rating=4.2,
+                rating=engine_rating if (engine_rating is not None and engine_rating > 0) else 4.2,
                 review_count=145,
                 image_url=image_url_val,
                 description='High performance electronics integrated with Weighted Ranking Engine analytics.',
@@ -265,6 +277,13 @@ def product_detail(product_id):
         # If product already exists and price in local DB is <= 5.0, sync with engine price attribute
         if engine_price is not None and engine_price > 5.0 and product.price <= 5.0:
             product.price = engine_price
+            try:
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+
+        if engine_rating is not None and (product.rating is None or product.rating != engine_rating):
+            product.rating = engine_rating
             try:
                 db.session.commit()
             except Exception:

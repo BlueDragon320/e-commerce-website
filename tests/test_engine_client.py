@@ -156,6 +156,34 @@ def test_enrich_with_local_products_image_sync_existing(app):
         updated_prod.image_url = original_img
         db.session.commit()
 
+def test_enrich_with_local_products_rating_sync_existing(app):
+    """Test that when engine returns updated rating, existing local product rating is synced and committed."""
+    with app.app_context():
+        from app import db
+        from app.models import Product
+        client = RankingEngineClient()
+        prod = db.session.get(Product, 1)
+        original_rating = prod.rating
+
+        # Temporarily set to stale rating
+        prod.rating = 4.0
+        db.session.commit()
+
+        results = [{
+            'product_id': 1,
+            'name': prod.name,
+            'attributes': {'Rating': {'raw_value': 4.8}}
+        }]
+        client._enrich_with_local_products(results)
+
+        assert results[0]['rating'] == 4.8
+        updated_prod = db.session.get(Product, 1)
+        assert updated_prod.rating == 4.8
+
+        # Restore original rating
+        updated_prod.rating = original_rating
+        db.session.commit()
+
 def test_enrich_with_local_products_auto_create_missing(app):
     """Test that missing product with engine image_url is auto-created in local database."""
     with app.app_context():
